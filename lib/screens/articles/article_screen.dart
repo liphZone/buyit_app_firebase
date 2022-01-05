@@ -1,3 +1,4 @@
+import 'package:buy_it_app/screens/articles/article_form.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -9,19 +10,9 @@ class ArticleScreen extends StatefulWidget {
 }
 
 class _ArticleScreenState extends State<ArticleScreen> {
-  TextEditingController searchController = TextEditingController();
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  addArticle() async{
-    //  await FirebaseFirestore.instance
-    //     .collection('articles')
-    //     .doc()
-    //     .set({
-    //       'libelle': 'Ryse of rome',
-    //       'quantite' : 10,
-    //       'prix' : 15000,
-    //      'imageUrl': url});
-    // print('URL IMAGE  $url');
-  }
+  TextEditingController searchController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -125,35 +116,58 @@ class _ArticleScreenState extends State<ArticleScreen> {
             ),
             //Categories
             Container(
-              height: 100,
-              width: MediaQuery.of(context).size.width,
-              child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 3,
-                  itemBuilder: (BuildContext context, int index) {
-                    return GestureDetector(
-                      child: Column(
-                        children: [
-                          Container(
-                              margin: EdgeInsets.all(10),
-                              height: 50,
-                              width: 100,
-                              decoration: BoxDecoration(
-                                color: Colors.orange.shade300,
-                                borderRadius: BorderRadius.circular(10),
+                height: 100,
+                width: MediaQuery.of(context).size.width,
+                child: StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection('categories')
+                        .snapshots(),
+                    builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                      return ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          shrinkWrap: true,
+                          itemCount: snapshot.data?.docs.length,
+                          itemBuilder: (context, i) {
+                            if (snapshot.hasData) {
+                              QueryDocumentSnapshot x = snapshot.data!.docs[i];
+                              return Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(children: [
+                                  Container(
+                                      margin: EdgeInsets.all(10),
+                                      padding: EdgeInsets.all(5),
+                                      height: 50,
+                                      width: 100,
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange.shade300,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Icon(Icons.phone_android_outlined),
+                                          Text('${x['libelle']}'),
+                                        ],
+                                      )),
+                                ]),
+                              );
+                            }
+                            if (!snapshot.hasData) {
+                              return Container(
+                                height: 70,
+                                width: 70,
+                                child: const CircularProgressIndicator(),
+                              );
+                            }
+                            return Container(
+                              child: Column(
+                                children: [
+                                  Text('chargement en cours'),
+                                  CircularProgressIndicator(),
+                                ],
                               ),
-                              child: Icon(Icons.phone_android_outlined)),
-                          Container(
-                            child: Text('Text'),
-                          ),
-                        ],
-                      ),
-                      onTap: () {
-                        Navigator.pushNamed(context, 'categorie');
-                      },
-                    );
-                  }),
-            ),
+                            );
+                          });
+                    })),
             //Autres articles
             // Text('Special'),
             Container(
@@ -183,42 +197,44 @@ class _ArticleScreenState extends State<ArticleScreen> {
                   ],
                 )),
             //Articles
-            GridView.builder(
-                shrinkWrap: true,
-                physics: ScrollPhysics(),
-                itemCount: 8,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2),
-                itemBuilder: (BuildContext context, int index) {
-                  // Article article = articleList[index];
-                  return Column(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.pushNamed(context, 'article_detail');
-                        },
-                        child: Column(
-                          children: [
-                            //***Image produit
-                            // Container(
-                            //   padding: EdgeInsets.all(4),
-                            //   height: 96,
-                            //   decoration: BoxDecoration(
-                            //       borderRadius:
-                            //           BorderRadius.circular(25),
-                            //       image: DecorationImage(
-                            //           image: NetworkImage(
-                            //               '${article.image}'),
-                            //           fit: BoxFit.cover)),
-                            // ),
-                            Text('Spiderman'),
-                            Text('5000 F CFA'),
-                          ],
-                        ),
-                      ),
-                    ],
-                  );
-                }),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SizedBox(
+                  height: 300,
+                  width: MediaQuery.of(context).size.width,
+                  child: StreamBuilder(
+                      stream: FirebaseFirestore.instance
+                          .collection('articles')
+                          .snapshots(),
+                      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                        return GridView.builder(
+                          shrinkWrap: true,
+                          itemCount: snapshot.data?.docs.length,
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount( crossAxisCount: 2,
+                              crossAxisSpacing: 6,
+                              mainAxisSpacing: 3), itemBuilder: (context,i){
+                                if (snapshot.hasData) {
+                                QueryDocumentSnapshot x = snapshot.data!.docs[i];
+                                return Column(children: [
+                                  Container(
+                                 padding: EdgeInsets.all(4),
+                                        height: 96,
+                                        decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(25),
+                                            image: DecorationImage(
+                                                image: NetworkImage(
+                                                    '${x['image']}'),
+                                                fit: BoxFit.cover)),),
+                                     Text('${x['libelle']} F CFA'),
+                                     Text('${x['prix']} F CFA'),
+                                ]);
+                              }
+
+                              return Container();
+                              });
+                      })),
+            ),
           ]),
         ),
       ),

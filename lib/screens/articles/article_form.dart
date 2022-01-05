@@ -1,5 +1,10 @@
+import 'dart:io';
+
 import 'package:buy_it_app/widgets/constants.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ArticleFormScreen extends StatefulWidget {
   final categorieReference;
@@ -19,8 +24,51 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
 
   bool load = false;
 
-  addArticle(){
-    
+  ImagePicker image = ImagePicker();
+
+  File? file;
+  String url = "";
+
+  getImage() async {
+    var img = await image.pickImage(source: ImageSource.gallery);
+    setState(() {
+      if (img == null) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Aucune image sélectionnée')));
+      }
+      file = File(img!.path);
+    });
+  }
+
+  // addImage() async {
+  //   FirebaseFirestore.instance.collection('articles');
+  // }
+
+  addArticle() async {
+    var imageFile = FirebaseStorage.instance.ref().child('articlePictures').child('${libelleController.text}/.jpg');
+    UploadTask task = imageFile.putFile(file!);
+    TaskSnapshot snapshot = await task;
+     url = await snapshot.ref.getDownloadURL();
+    try {
+      await FirebaseFirestore.instance.collection('articles').doc().set({
+        'libelle': libelleController.text,
+        'description': descriptionController.text,
+        'categorie_id': widget.categorieReference,
+        'prix': prixController.text,
+        'quantite': quantiteController.text,
+        'image': url
+      });
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Vous avez ajouté un article')));
+      setState(() {
+        load = !load;
+      });
+      Navigator.pop(context);
+    } on FirebaseException catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Erreur $e')));
+    }
   }
 
   @override
@@ -37,16 +85,16 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
             child: Column(
               children: [
                 GestureDetector(
-                  onTap: () {},
+                  onTap: getImage,
                   child: Column(
                     children: [
-                      const Text('Choisissez votre image ici'),
-                      Container(
-                          height: 100,
-                          width: 100,
-                          decoration: BoxDecoration(
-                              color: Colors.grey,
-                              borderRadius: BorderRadius.circular(20))),
+                      Text('Choisissez votre image ici'),
+                      CircleAvatar(
+                        backgroundImage: file == null
+                            ? AssetImage("")
+                            : FileImage(File(file!.path)) as ImageProvider,
+                        radius: 80,
+                      ),
                     ],
                   ),
                 ),
@@ -105,7 +153,7 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
                             setState(() {
                               load = !load;
                             });
-                            // addArticle();
+                            addArticle();
                           }
                         },
                         child: Text(

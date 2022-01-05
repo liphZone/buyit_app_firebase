@@ -90,7 +90,6 @@ class _CategorieFormScreenState extends State<CategorieFormScreen> {
                                 load = !load;
                               });
                               addCategorie();
-                              print('OK');
                             }
                           },
                           child: Text(
