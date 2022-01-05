@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "478845725556",
+    "project_id": "buy-it-app-c4f6e",
+    "storage_bucket": "buy-it-app-c4f6e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:478845725556:android:7e5668d7607219d583da21",
+        "android_client_info": {
+          "package_name": "com.example.buy_it_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "478845725556-a7aflbrnv1sc2t0gkdkm9h3n956jbvq8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsvGNdeMgIuHrVTIV-gaaOf_1lLo7z0Ls"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "478845725556-a7aflbrnv1sc2t0gkdkm9h3n956jbvq8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
