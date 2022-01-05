@@ -1,4 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
+//Instance de FirebaseFirestore
+final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
 Row kTitle(text) {
   return Row(

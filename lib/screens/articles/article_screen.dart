@@ -1,4 +1,5 @@
-import 'package:buy_it_app/screens/articles/article_form.dart';
+import 'package:buy_it_app/screens/articles/article_details.dart';
+import 'package:buy_it_app/screens/categories/categorie_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -10,7 +11,7 @@ class ArticleScreen extends StatefulWidget {
 }
 
 class _ArticleScreenState extends State<ArticleScreen> {
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  
 
   TextEditingController searchController = TextEditingController();
 
@@ -133,21 +134,30 @@ class _ArticleScreenState extends State<ArticleScreen> {
                               return Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Column(children: [
-                                  Container(
-                                      margin: EdgeInsets.all(10),
-                                      padding: EdgeInsets.all(5),
-                                      height: 50,
-                                      width: 100,
-                                      decoration: BoxDecoration(
-                                        color: Colors.orange.shade300,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Icon(Icons.phone_android_outlined),
-                                          Text('${x['libelle']}'),
-                                        ],
-                                      )),
+                                  GestureDetector(
+                                    onTap:(){
+                                      Navigator.push(context,
+                                      MaterialPageRoute(builder: (context) =>CategorieScreen(
+                                        referenceCategorie: '${x['reference']}',
+                                        libelleCategorie: '${x['libelle']}',
+                                      )));
+                                    },
+                                    child: Container(
+                                        margin: EdgeInsets.all(10),
+                                        padding: EdgeInsets.all(5),
+                                        height: 50,
+                                        width: 100,
+                                        decoration: BoxDecoration(
+                                          color: Colors.orange.shade300,
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Icon(Icons.phone_android_outlined),
+                                            Text('${x['libelle']}'),
+                                          ],
+                                        )),
+                                  ),
                                 ]),
                               );
                             }
@@ -206,33 +216,69 @@ class _ArticleScreenState extends State<ArticleScreen> {
                       stream: FirebaseFirestore.instance
                           .collection('articles')
                           .snapshots(),
-                      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                      builder:
+                          (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                         return GridView.builder(
-                          shrinkWrap: true,
-                          itemCount: snapshot.data?.docs.length,
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount( crossAxisCount: 2,
-                              crossAxisSpacing: 6,
-                              mainAxisSpacing: 3), itemBuilder: (context,i){
-                                if (snapshot.hasData) {
-                                QueryDocumentSnapshot x = snapshot.data!.docs[i];
-                                return Column(children: [
-                                  Container(
-                                 padding: EdgeInsets.all(4),
-                                        height: 96,
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(25),
-                                            image: DecorationImage(
-                                                image: NetworkImage(
-                                                    '${x['image']}'),
-                                                fit: BoxFit.cover)),),
-                                     Text('${x['libelle']} F CFA'),
-                                     Text('${x['prix']} F CFA'),
-                                ]);
+                            shrinkWrap: true,
+                            itemCount: snapshot.data?.docs.length,
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    crossAxisSpacing: 6,
+                                    mainAxisSpacing: 3),
+                            itemBuilder: (context, i) {
+                              if (snapshot.hasData) {
+                                QueryDocumentSnapshot x =
+                                    snapshot.data!.docs[i];
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                ArticleDetailScreen(
+                                                  reference: '${x['reference']}',
+                                                  libelle: '${x['libelle']}',
+                                                  description : '${x['libelle']}',
+                                                  prix : '${x['prix']}',
+                                                  quantite : '${x['quantite']}',
+                                                  image : '${x['image']}',
+                                                  )));
+                                  },
+                                  child: Column(children: [
+                                    Container(
+                                      padding: EdgeInsets.all(4),
+                                      height: 96,
+                                      decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(25),
+                                          image: DecorationImage(
+                                              image:
+                                                  NetworkImage('${x['image']}'),
+                                              fit: BoxFit.cover)),
+                                    ),
+                                    Text('${x['libelle']}'),
+                                    Text('${x['prix']} F CFA'),
+                                  ]),
+                                );
                               }
 
-                              return Container();
-                              });
+                              if (!snapshot.hasData) {
+                                return Container(
+                                  height: 70,
+                                  width: 70,
+                                  child: const CircularProgressIndicator(),
+                                );
+                              }
+                              return Container(
+                                child: Column(
+                                  children: [
+                                    Text('chargement en cours'),
+                                    CircularProgressIndicator(),
+                                  ],
+                                ),
+                              );
+                            });
                       })),
             ),
           ]),

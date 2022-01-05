@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:buy_it_app/widgets/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -40,18 +41,20 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
     });
   }
 
-  // addImage() async {
-  //   FirebaseFirestore.instance.collection('articles');
-  // }
-
   addArticle() async {
-    var imageFile = FirebaseStorage.instance.ref().child('articlePictures').child('${libelleController.text}/.jpg');
+    var libelle = libelleController.text;
+    var imageFile = FirebaseStorage.instance
+        .ref()
+        .child('articles')
+        .child('${libelleController.text}/.jpg');
     UploadTask task = imageFile.putFile(file!);
     TaskSnapshot snapshot = await task;
-     url = await snapshot.ref.getDownloadURL();
+    url = await snapshot.ref.getDownloadURL();
+
     try {
       await FirebaseFirestore.instance.collection('articles').doc().set({
-        'libelle': libelleController.text,
+        'reference': 'PROD-${Random().nextInt(100000)}',
+        'libelle': '${libelle[0].toUpperCase()}${libelle.substring(1)}',
         'description': descriptionController.text,
         'categorie_id': widget.categorieReference,
         'prix': prixController.text,

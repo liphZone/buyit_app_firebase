@@ -1,5 +1,6 @@
 import 'package:buy_it_app/screens/categories/categorie_transition.dart';
 import 'package:buy_it_app/widgets/constants.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class CompteScreen extends StatefulWidget {
@@ -11,6 +12,22 @@ class CompteScreen extends StatefulWidget {
 
 class _CompteScreenState extends State<CompteScreen> {
   int index = -1;
+  User? user = FirebaseAuth.instance.currentUser;
+
+  Future<void> signOut() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Déconnexion réussie')));
+      Navigator.pushNamed(context, 'home');
+    } on FirebaseException catch (e) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('${e.message}')));
+      print('Erreur : ${e.message}');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,34 +62,35 @@ class _CompteScreenState extends State<CompteScreen> {
                   ),
                 ],
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, 'auth');
-                      },
-                      child: const Text('S\'inscrire\t')),
-                  TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, 'auth');
-                      },
-                      child: const Text('Se connecter')),
-                ],
-              ),
-              // : Container(
-              //     height: 50,
-              //     width: 300,
-              //     decoration: BoxDecoration(
-              //       borderRadius: BorderRadius.circular(20),
-              //     ),
-              //     child: Text(
-              //       'Email User',
-              //       textAlign: TextAlign.center,
-              //       style: TextStyle(
-              //           fontSize: 20, fontWeight: FontWeight.bold),
-              //     ),
-              //   ),
+              user?.email == null
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, 'auth');
+                            },
+                            child: const Text('S\'inscrire\t')),
+                        TextButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, 'auth');
+                            },
+                            child: const Text('Se connecter')),
+                      ],
+                    )
+                  : Container(
+                      height: 50,
+                      width: 300,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        '${user?.email}',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                    ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Container(
@@ -106,13 +124,15 @@ class _CompteScreenState extends State<CompteScreen> {
                                 //;
                               },
                             ),
-                            ListTile(
-                              leading: Icon(Icons.logout),
-                              title: Text("Déconnexion "),
-                              onTap: () {
-                                //Fonction de deconnexion
-                              },
-                            ),
+                            user?.email != null
+                                ? ListTile(
+                                    leading: Icon(Icons.logout),
+                                    title: Text("Déconnexion "),
+                                    onTap: () {
+                                      signOut();
+                                    },
+                                  )
+                                : SizedBox(),
                           ],
                         ),
                         isExpanded: index == 0,

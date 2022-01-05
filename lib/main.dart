@@ -27,8 +27,6 @@ class MyApp extends StatelessWidget {
       routes: {
         'home': (context) => const HomeScreen(),
         'article': (context) => const ArticleScreen(),
-        'article_detail': (context) => const ArticleDetailScreen(),
-        'categorie': (context) => const CategorieScreen(),
         'categorie_form': (context) => const CategorieFormScreen(),
         'panier': (context) => const PanierScreen(),
         'auth': (context) => const ConnectionScreen(),

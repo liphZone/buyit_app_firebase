@@ -1,4 +1,6 @@
 import 'package:buy_it_app/widgets/constants.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ConnectionScreen extends StatefulWidget {
@@ -12,12 +14,62 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
   bool stateBar = true;
   bool _load = false;
 
+  late User? user;
+
   GlobalKey<FormState> registerFormKey = GlobalKey();
   GlobalKey<FormState> loginFormKey = GlobalKey();
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController pwdController = TextEditingController();
   TextEditingController pwdConfirmController = TextEditingController();
+
+  Future<void> registerUser() async {
+    try {
+      await FirebaseFirestore.instance.collection('users').doc().set({
+        'name': nameController.text,
+        'email': emailController.text,
+        //le mot de passe n'est pas enregistré quelque soit la methode que j'utilise
+        // 'password': pwdConfirmController.text,
+        'status': 'customer',
+      });
+
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+              email: emailController.text, password: pwdConfirmController.text);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Votre compte a été crée')));
+      Navigator.pop(context);
+      print('User : ${userCredential.user}');
+    } on FirebaseException catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('${e.message}')));
+      print('Erreur : ${e.message}');
+    }
+  }
+
+  Future<void> loginUser() async {
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+              email: emailController.text, password: pwdController.text);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Connexion réussie')));
+      Navigator.pushNamed(context, 'home');
+    } on FirebaseException catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('${e.message}')));
+      print('Erreur : ${e.message}');
+    }
+  }
+
+ 
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    pwdConfirmController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,8 +178,8 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
                                 controller: pwdController,
                                 keyboardType: TextInputType.text,
                                 decoration: kInputDecoration('mot de passe'),
-                                validator: (val) => val!.length < 3
-                                    ? 'minimum 3 caratères requis !'
+                                validator: (val) => val!.length < 6
+                                    ? 'minimum 6 caratères requis !'
                                     : null,
                               ),
                             ),
@@ -157,7 +209,7 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
                                         setState(() {
                                           _load = !_load;
                                         });
-                                        // _registerUser();
+                                        registerUser();
                                       }
                                     },
                                     child: Text('S\'INSCRIRE')),
@@ -191,8 +243,8 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
                                 controller: pwdController,
                                 keyboardType: TextInputType.text,
                                 decoration: kInputDecoration('mot de passe'),
-                                validator: (val) => val!.length < 3
-                                    ? 'minimum 3 caratères requis !'
+                                validator: (val) => val!.length < 6
+                                    ? 'minimum 6 caratères requis !'
                                     : null,
                               ),
                             ),
@@ -204,7 +256,7 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
                                           .validate()) {
                                         setState(() {
                                           _load = !_load;
-                                          // _loginUser();
+                                          loginUser();
                                         });
                                       }
                                     },
@@ -226,7 +278,7 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
                           width: 25,
                         )),
                     TextButton(
-                        onPressed: (){},
+                        onPressed: () {},
                         child: Image(
                           image: AssetImage(
                             'assets/images/google.png',
