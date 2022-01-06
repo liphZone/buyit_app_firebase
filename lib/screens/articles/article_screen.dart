@@ -1,5 +1,6 @@
 import 'package:buy_it_app/screens/articles/article_details.dart';
 import 'package:buy_it_app/screens/categories/categorie_screen.dart';
+import 'package:buy_it_app/screens/search_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -12,7 +13,6 @@ class ArticleScreen extends StatefulWidget {
 
 class _ArticleScreenState extends State<ArticleScreen> {
   TextEditingController searchController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,16 +38,16 @@ class _ArticleScreenState extends State<ArticleScreen> {
                     suffixIcon: IconButton(
                         hoverColor: Colors.blue,
                         onPressed: () {
-                          // searchController.text.isNotEmpty
-                          //     ? Navigator.push(
-                          //         context,
-                          //         MaterialPageRoute(
-                          //             builder: (context) => ArticlSearchScreen(
-                          //                   article: searchList,
-                          //                 )))
-                          //     : ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          //         content: Text(
-                          //             'Veuillez saisir dans le champs de recherche')));
+                          searchController.text.isNotEmpty
+                              ? Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => SearchScreen(
+                                            search: searchController.text,
+                                          )))
+                              : ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text(
+                                      'Veuillez saisir dans le champs de recherche')));
 
                           // searchArticle();
                         },
@@ -252,16 +252,11 @@ class _ArticleScreenState extends State<ArticleScreen> {
                                                 )));
                                   },
                                   child: Column(children: [
-                                    Container(
-                                      padding: EdgeInsets.all(4),
-                                      height: 96,
-                                      decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(25),
-                                          image: DecorationImage(
-                                              image:
-                                                  NetworkImage('${x['image']}'),
-                                              fit: BoxFit.cover)),
+                                    Image.network(
+                                      '${x['image']}',
+                                      height: 120,
+                                      width: 120,
+                                      fit: BoxFit.cover,
                                     ),
                                     Text('${x['libelle']}'),
                                     Text('${x['prix']} F CFA'),

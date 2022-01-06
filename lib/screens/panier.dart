@@ -12,18 +12,6 @@ class PanierScreen extends StatefulWidget {
 class _PanierScreenState extends State<PanierScreen> {
   User? user;
 
-  void userData() async {
-    setState(() {
-      user = FirebaseAuth.instance.currentUser;
-    });
-  }
-
-  @override
-  void initState() {
-    userData();
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -19,7 +19,7 @@ class _CategorieScreenState extends State<CategorieScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: kTitle('Categorie produit'),
+        title: kTitle('${widget.libelleCategorie}'),
         centerTitle: true,
         backgroundColor: Colors.white,
         leading: IconButton(

@@ -50,12 +50,22 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
     });
   }
 
+  setSearchParam() {
+    List<String> caseSearchList = [];
+    String temp = "";
+    for (int i = 0; i < libelleController.text.length; i++) {
+      temp = temp + libelleController.text[i];
+      caseSearchList.add(temp);
+    }
+    return caseSearchList;
+  }
+
   addArticle() async {
     var libelle = libelleController.text;
     var imageFile = FirebaseStorage.instance
         .ref()
         .child('articles')
-        .child('${libelleController.text}/.jpg');
+        .child('${libelleController.text}.jpg');
     UploadTask task = imageFile.putFile(file!);
     TaskSnapshot snapshot = await task;
     url = await snapshot.ref.getDownloadURL();
@@ -69,14 +79,19 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
         'prix': prixController.text,
         'quantite': quantiteController.text,
         'image': url,
-        'user_id': user?.uid
+        'user_id': user?.uid,
+        'search_keywords': setSearchParam()
       });
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Vous avez ajouté un article')));
       setState(() {
         load = !load;
       });
-      Navigator.pop(context);
+      Navigator.of(context);
+      libelleController.clear();
+      descriptionController.clear();
+      prixController.clear();
+      quantiteController.clear();
     } on FirebaseException catch (e) {
       print(e);
       ScaffoldMessenger.of(context)
@@ -84,13 +99,11 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
     }
   }
 
-  
   @override
   void initState() {
     userData();
     super.initState();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -102,6 +115,8 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
         child: Form(
           key: articleFormKey,
           child: Container(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
             margin: EdgeInsets.all(10),
             child: Column(
               children: [
@@ -110,12 +125,13 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
                   child: Column(
                     children: [
                       Text('Choisissez votre image ici'),
-                      CircleAvatar(
-                        backgroundImage: file == null
-                            ? AssetImage("")
-                            : FileImage(File(file!.path)) as ImageProvider,
-                        radius: 80,
+                      Icon(
+                        Icons.attach_file,
+                        size: 30,
                       ),
+                      file != null
+                          ? Text('$file')
+                          : Text('Aucune image selectionnée')
                     ],
                   ),
                 ),
