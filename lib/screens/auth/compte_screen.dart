@@ -12,20 +12,25 @@ class CompteScreen extends StatefulWidget {
 
 class _CompteScreenState extends State<CompteScreen> {
   int index = -1;
-  User? user = FirebaseAuth.instance.currentUser;
-
   Future<void> signOut() async {
-    try {
-      await FirebaseAuth.instance.signOut();
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Déconnexion réussie')));
-      Navigator.pushNamed(context, 'home');
-    } on FirebaseException catch (e) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('${e.message}')));
-      print('Erreur : ${e.message}');
-    }
+    await FirebaseAuth.instance.signOut();
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('Déconnexion réussie')));
+    Navigator.pushNamed(context, 'home');
+  }
+
+  User? user;
+  
+  void userData() async {
+    setState(() {
+      user = FirebaseAuth.instance.currentUser;
+    });
+  }
+
+    @override
+  void initState() {
+    userData();
+    super.initState();
   }
 
   @override

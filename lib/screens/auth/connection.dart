@@ -62,8 +62,6 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
     }
   }
 
- 
-
   @override
   void dispose() {
     emailController.dispose();

@@ -11,8 +11,6 @@ class ArticleScreen extends StatefulWidget {
 }
 
 class _ArticleScreenState extends State<ArticleScreen> {
-  
-
   TextEditingController searchController = TextEditingController();
 
   @override
@@ -88,7 +86,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
         width: MediaQuery.of(context).size.width,
         color: Colors.grey.shade200,
         child: SingleChildScrollView(
-          physics: const ScrollPhysics(),
+          physics: ScrollPhysics(),
           child: Column(children: [
             //Annonce
             Padding(
@@ -135,12 +133,17 @@ class _ArticleScreenState extends State<ArticleScreen> {
                                 padding: const EdgeInsets.all(8.0),
                                 child: Column(children: [
                                   GestureDetector(
-                                    onTap:(){
-                                      Navigator.push(context,
-                                      MaterialPageRoute(builder: (context) =>CategorieScreen(
-                                        referenceCategorie: '${x['reference']}',
-                                        libelleCategorie: '${x['libelle']}',
-                                      )));
+                                    onTap: () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  CategorieScreen(
+                                                    referenceCategorie:
+                                                        '${x['reference']}',
+                                                    libelleCategorie:
+                                                        '${x['libelle']}',
+                                                  )));
                                     },
                                     child: Container(
                                         margin: EdgeInsets.all(10),
@@ -149,7 +152,8 @@ class _ArticleScreenState extends State<ArticleScreen> {
                                         width: 100,
                                         decoration: BoxDecoration(
                                           color: Colors.orange.shade300,
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
                                         ),
                                         child: Column(
                                           children: [
@@ -184,6 +188,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
                 height: 150,
                 width: MediaQuery.of(context).size.width,
                 child: ListView(
+                  shrinkWrap: true,
                   scrollDirection: Axis.horizontal,
                   children: [
                     Row(children: [
@@ -219,12 +224,11 @@ class _ArticleScreenState extends State<ArticleScreen> {
                       builder:
                           (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                         return GridView.builder(
-                            shrinkWrap: true,
                             itemCount: snapshot.data?.docs.length,
                             gridDelegate:
                                 SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: 2,
-                                    crossAxisSpacing: 6,
+                                    crossAxisSpacing: 10,
                                     mainAxisSpacing: 3),
                             itemBuilder: (context, i) {
                               if (snapshot.hasData) {
@@ -237,13 +241,15 @@ class _ArticleScreenState extends State<ArticleScreen> {
                                         MaterialPageRoute(
                                             builder: (context) =>
                                                 ArticleDetailScreen(
-                                                  reference: '${x['reference']}',
+                                                  reference:
+                                                      '${x['reference']}',
                                                   libelle: '${x['libelle']}',
-                                                  description : '${x['libelle']}',
-                                                  prix : '${x['prix']}',
-                                                  quantite : '${x['quantite']}',
-                                                  image : '${x['image']}',
-                                                  )));
+                                                  description:
+                                                      '${x['libelle']}',
+                                                  prix: '${x['prix']}',
+                                                  quantite: '${x['quantite']}',
+                                                  image: '${x['image']}',
+                                                )));
                                   },
                                   child: Column(children: [
                                     Container(

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:buy_it_app/widgets/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ArticleDetailScreen extends StatefulWidget {
@@ -32,6 +33,15 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
   int qValue = 1;
   var qvChangeController = TextEditingController();
 
+  User? user;
+  
+  void userData() async {
+    setState(() {
+      user = FirebaseAuth.instance.currentUser;
+    });
+  }
+
+
   void addQuantite() {
     setState(() {
       qValue++;
@@ -51,7 +61,7 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
         'article_id': widget.reference,
         'prix_vente': widget.prix,
         'quantite_vendue': widget.quantite,
-        'user_id': 1,
+        'user_id': user?.uid,
         'montant': '${int.parse(widget.prix) * int.parse(widget.quantite)}',
       });
       ScaffoldMessenger.of(context).showSnackBar(
@@ -70,6 +80,7 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
   @override
   void initState() {
     qvChangeController.text = '$qValue';
+    userData();
     super.initState();
   }
 
@@ -162,101 +173,95 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
                 ),
               ],
             ),
-             FlatButton(
-                    color: Colors.blue,
-                    splashColor: Colors.lightBlue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (_) => AlertDialog(
-                              title: Text(
-                                  'Vous allez ajouter  dans votre panier  ?'),
-                              actions: [
-                                FlatButton(
-                                    onPressed: () {
-                                      addVente();
-                                    },
-                                    child: Text('Confirmer')),
-                                FlatButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: Text('Annuler')),
-                              ],
-                              content: Form(
-                                key: venteFormKey,
-                                child: Container(
-                                  height: 200,
-                                  child: ListView(
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: TextFormField(
-                                            readOnly: true,
-                                            initialValue: '${widget.libelle}',
-                                            decoration: InputDecoration(
-                                              labelText: 'Produit',
-                                              border: OutlineInputBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          30)),
-                                            )),
-                                      ),
-                                      SizedBox(
-                                        height: 10,
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: TextFormField(
-                                            readOnly: true,
-                                            initialValue:
-                                                qvChangeController.text,
-                                            decoration: InputDecoration(
-                                              labelText: 'Quantité à ajouter',
-                                              border: OutlineInputBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          30)),
-                                            )),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: TextFormField(
-                                            readOnly: true,
-                                            initialValue: '${widget.prix}',
-                                            decoration: InputDecoration(
-                                              labelText: 'Prix',
-                                              border: OutlineInputBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          30)),
-                                            )),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: TextFormField(
-                                            readOnly: true,
-                                            initialValue:
-                                                "${int.parse(widget.prix) * int.parse(widget.quantite)}",
-                                            decoration: InputDecoration(
-                                              labelText: 'Montant',
-                                              border: OutlineInputBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          30)),
-                                            )),
-                                      )
-                                    ],
-                                  ),
+            FlatButton(
+              color: Colors.blue,
+              splashColor: Colors.lightBlue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                        title: Text('Vous allez ajouter  dans votre panier  ?'),
+                        actions: [
+                          FlatButton(
+                              onPressed: () {
+                                addVente();
+                              },
+                              child: Text('Confirmer')),
+                          FlatButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text('Annuler')),
+                        ],
+                        content: Form(
+                          key: venteFormKey,
+                          child: Container(
+                            height: 200,
+                            child: ListView(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: TextFormField(
+                                      readOnly: true,
+                                      initialValue: '${widget.libelle}',
+                                      decoration: InputDecoration(
+                                        labelText: 'Produit',
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(30)),
+                                      )),
                                 ),
-                              )));
-                    },
-                    child: Text(
-                      'Ajouter au Panier',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: TextFormField(
+                                      readOnly: true,
+                                      initialValue: qvChangeController.text,
+                                      decoration: InputDecoration(
+                                        labelText: 'Quantité à ajouter',
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(30)),
+                                      )),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: TextFormField(
+                                      readOnly: true,
+                                      initialValue: '${widget.prix}',
+                                      decoration: InputDecoration(
+                                        labelText: 'Prix',
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(30)),
+                                      )),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: TextFormField(
+                                      readOnly: true,
+                                      initialValue:
+                                          "${int.parse(widget.prix) * qValue as int}",
+                                      decoration: InputDecoration(
+                                        labelText: 'Montant',
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(30)),
+                                      )),
+                                )
+                              ],
+                            ),
+                          ),
+                        )));
+              },
+              child: Text(
+                'Ajouter au Panier',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
           ],
         ),
       ),

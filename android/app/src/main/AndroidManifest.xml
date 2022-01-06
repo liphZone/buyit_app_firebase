@@ -2,6 +2,7 @@
     package="com.example.buy_it_app">
    <application
         android:label="buy_it_app"
+        android:requestLegacyExternalStorage="true"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

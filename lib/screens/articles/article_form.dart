@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:buy_it_app/widgets/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -30,6 +31,8 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
   File? file;
   String url = "";
 
+  User? user;
+
   getImage() async {
     var img = await image.pickImage(source: ImageSource.gallery);
     setState(() {
@@ -38,6 +41,12 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
             .showSnackBar(SnackBar(content: Text('Aucune image sélectionnée')));
       }
       file = File(img!.path);
+    });
+  }
+
+  void userData() async {
+    setState(() {
+      user = FirebaseAuth.instance.currentUser;
     });
   }
 
@@ -59,7 +68,8 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
         'categorie_id': widget.categorieReference,
         'prix': prixController.text,
         'quantite': quantiteController.text,
-        'image': url
+        'image': url,
+        'user_id': user?.uid
       });
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Vous avez ajouté un article')));
@@ -73,6 +83,14 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
           .showSnackBar(SnackBar(content: Text('Erreur $e')));
     }
   }
+
+  
+  @override
+  void initState() {
+    userData();
+    super.initState();
+  }
+
 
   @override
   Widget build(BuildContext context) {
