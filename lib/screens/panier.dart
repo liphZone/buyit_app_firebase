@@ -33,16 +33,39 @@ class _PanierScreenState extends State<PanierScreen> {
   //   });
   // }
 
-  addPanier() async {
-    try {
-      await FirebaseFirestore.instance.collection('ventes').doc(user?.uid).set({
-        'user_id': user?.uid,
-        'montant': montant,
-      });
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Panier mis a jour')));
+  // addPanier() async {
+  //   try {
+  //     await FirebaseFirestore.instance.collection('ventes').doc(user?.uid).set({
+  //       'user_id': user?.uid,
+  //       'montant': montant,
+  //     });
+  //     ScaffoldMessenger.of(context)
+  //         .showSnackBar(SnackBar(content: Text('Panier mis a jour')));
 
-      Navigator.pop(context);
+  //     Navigator.pop(context);
+  //   } on FirebaseException catch (e) {
+  //     print(e);
+  //     ScaffoldMessenger.of(context)
+  //         .showSnackBar(SnackBar(content: Text('Erreur $e')));
+  //   }
+  // }
+
+  basket() async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('ventes')
+          .get()
+          .then((snapshot) {
+        //  ScaffoldMessenger.of(context)
+        // .showSnackBar(SnackBar(content: Text('Taille : ${snapshot.docs.length}')));
+        double sum = 0.0;
+        for (var counter = 0; counter < snapshot.docs.length; counter++) {
+          sum += int.parse(snapshot.docs[counter]['montant']);
+        }
+        Text('$sum');
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Somme : $sum')));
+      });
     } on FirebaseException catch (e) {
       print(e);
       ScaffoldMessenger.of(context)
@@ -54,6 +77,7 @@ class _PanierScreenState extends State<PanierScreen> {
   void initState() {
     user = FirebaseAuth.instance.currentUser;
     // existPanier();
+    basket();
     super.initState();
   }
 
@@ -136,7 +160,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                       counter < ds.length;
                                       counter++) {
                                     sum += int.parse(ds[counter]['montant']);
-                                      montant = sum;
+                                    montant = sum;
                                   }
 
                                   return Padding(
@@ -153,7 +177,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                         ),
                                         Container(
                                           height: 100,
-                                          width: 100,
+                                          width: 120,
                                           child: Column(
                                             children: [
                                               Text(
@@ -167,7 +191,8 @@ class _PanierScreenState extends State<PanierScreen> {
                                                   Text(
                                                       '${x['quantite_vendue']}'),
                                                 ],
-                                              )
+                                              ),
+                                              Text('Somme : $sum'),
                                             ],
                                           ),
                                         ),
@@ -223,41 +248,61 @@ class _PanierScreenState extends State<PanierScreen> {
                   BoxDecoration(color: Colors.grey.shade100, boxShadow: [
                 BoxShadow(blurRadius: 4),
               ]),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    // vente == null
-                    //     ? CircularProgressIndicator()
-                    //     :
-                    Text(
-                      'Montant total: $montant F CFA',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                    ),
-                    Row(
-                      children: [
-                        IconButton(onPressed: () {}, icon: Icon(Icons.refresh)),
-                        FlatButton(
-                          color: Colors.blue,
-                          onPressed: () {
-                            // ScaffoldMessenger.of(context).showSnackBar(
-                            //     SnackBar(content: Text('Paiement .....')));
-                            
-                          },
-                          child: Text(
-                            'Commander',
-                            style: TextStyle(fontSize: 20, color: Colors.white),
-                          ),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30)),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-              ),
-            )
+              child: StreamBuilder(
+                  stream: FirebaseFirestore.instance
+                      .collection('paniers')
+                      .snapshots(),
+                  builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                    return ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        shrinkWrap: true,
+                        itemCount: snapshot.data?.docs.length,
+                        itemBuilder: (context, i) {
+                          if (snapshot.hasData) {
+                            QueryDocumentSnapshot x = snapshot.data!.docs[i];
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(children: [
+                                Text(
+                                  'Montant total: ${x['montant']} F CFA',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20),
+                                ),
+                                FlatButton(
+                                  color: Colors.blue,
+                                  onPressed: () {
+                                    // ScaffoldMessenger.of(context).showSnackBar(
+                                    //     SnackBar(content: Text('Paiement .....')));
+                                  },
+                                  child: Text(
+                                    'Commander',
+                                    style: TextStyle(
+                                        fontSize: 20, color: Colors.white),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30)),
+                                )
+                              ]),
+                            );
+                          }
+                          if (!snapshot.hasData) {
+                            return Container(
+                              height: 70,
+                              width: 70,
+                              child: const CircularProgressIndicator(),
+                            );
+                          }
+                          return Container(
+                            child: Column(
+                              children: [
+                                Text('chargement en cours'),
+                                CircularProgressIndicator(),
+                              ],
+                            ),
+                          );
+                        });
+                  }))
           : null,
     );
   }

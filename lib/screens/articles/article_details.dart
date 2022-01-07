@@ -66,7 +66,10 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
 
   addVente() async {
     try {
-      await FirebaseFirestore.instance.collection('ventes').doc(widget.reference).set({
+      await FirebaseFirestore.instance
+          .collection('ventes')
+          .doc(widget.reference)
+          .set({
         'reference': 'V-${Random().nextInt(100000)}',
         'article_id': widget.reference,
         'article': widget.libelle,
@@ -83,6 +86,33 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
         load = !load;
       });
       Navigator.pop(context);
+    } on FirebaseException catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Erreur $e')));
+    }
+  }
+
+  basket() async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('ventes')
+          .get()
+          .then((snapshot) {
+        //  ScaffoldMessenger.of(context)
+        // .showSnackBar(SnackBar(content: Text('Taille : ${snapshot.docs.length}')));
+        double sum = 0.0;
+        for (var counter = 0; counter < snapshot.docs.length; counter++) {
+          sum += int.parse(snapshot.docs[counter]['montant']);
+        }
+        FirebaseFirestore.instance
+            .collection('paniers')
+            .doc(widget.reference)
+            .set({'user_id': user?.uid, 'montant': sum 
+            });
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Panier add')));
+      });
     } on FirebaseException catch (e) {
       print(e);
       ScaffoldMessenger.of(context)
@@ -201,6 +231,7 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
                           FlatButton(
                               onPressed: () {
                                 addVente();
+                                basket();
                               },
                               child: Text('Confirmer')),
                           FlatButton(
