@@ -20,16 +20,10 @@ class _CompteScreenState extends State<CompteScreen> {
   }
 
   User? user;
-  
-  void userData() async {
-    setState(() {
-      user = FirebaseAuth.instance.currentUser;
-    });
-  }
 
     @override
   void initState() {
-    userData();
+  user = FirebaseAuth.instance.currentUser;
     super.initState();
   }
 

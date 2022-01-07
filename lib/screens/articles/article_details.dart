@@ -60,9 +60,9 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
         'reference': 'V-${Random().nextInt(100000)}',
         'article_id': widget.reference,
         'prix_vente': widget.prix,
-        'quantite_vendue': widget.quantite,
+        'quantite_vendue': qvChangeController.text,
         'user_id': user?.uid,
-        'montant': '${int.parse(widget.prix) * int.parse(widget.quantite)}',
+        'montant': '${int.parse(widget.prix) * int.parse(qvChangeController.text)}',
       });
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Nouveau produit ajouté au panier')));

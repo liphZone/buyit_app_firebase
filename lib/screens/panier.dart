@@ -11,6 +11,13 @@ class PanierScreen extends StatefulWidget {
 
 class _PanierScreenState extends State<PanierScreen> {
   User? user;
+  
+ double? montant;
+  @override
+  void initState() {
+    user = FirebaseAuth.instance.currentUser;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,21 +39,19 @@ class _PanierScreenState extends State<PanierScreen> {
         centerTitle: true,
         backgroundColor: Colors.white,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            user?.email == null
-                ? Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Center(
-                      child: Container(
-                        margin: EdgeInsets.all(10),
-                        height: 300,
-                        width: MediaQuery.of(context).size.width,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade50,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+      body: Container(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        color: Colors.grey.shade200,
+        child: SingleChildScrollView(
+          physics: ScrollPhysics(),
+          child: Container(
+            height: MediaQuery.of(context).size.height * .70,
+            child: Column(children: [
+              user?.email == null
+                  ? Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Center(
                         child: Column(
                           children: [
                             Image.asset(
@@ -68,84 +73,98 @@ class _PanierScreenState extends State<PanierScreen> {
                           ],
                         ),
                       ),
-                    ),
-                  )
-                : Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: SizedBox(
-                        height: MediaQuery.of(context).size.height,
-                        width: MediaQuery.of(context).size.width,
-                        child: StreamBuilder(
-                            stream: FirebaseFirestore.instance
-                                .collection('articles')
-                                .where('user_id', isEqualTo: user?.email)
-                                .snapshots(),
-                            builder: (context,
-                                AsyncSnapshot<QuerySnapshot> snapshot) {
-                              return ListView.builder(
-                                  shrinkWrap: true,
-                                  scrollDirection: Axis.vertical,
-                                  itemCount: snapshot.data?.docs.length,
-                                  itemBuilder: (context, i) {
-                                    if (snapshot.hasData) {
-                                      QueryDocumentSnapshot x =
-                                          snapshot.data!.docs[i];
-                                      return Row(children: [
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Container(
-                                            height: 150,
-                                            width: 150,
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(25),
-                                                image: DecorationImage(
-                                                    image: NetworkImage(
-                                                        '${x['image']}'),
-                                                    fit: BoxFit.cover)),
-                                          ),
-                                        ),
-                                        Column(
-                                          children: [
-                                            Text('${x['libelle']}'),
-                                            Text('${x['prix']} F CFA'),
-                                          ],
-                                        ),
-                                      ]);
-                                    }
+                    )
+                  : Container(
+                      height: 300,
+                      width: MediaQuery.of(context).size.width,
+                      child: StreamBuilder(
+                          stream: FirebaseFirestore.instance
+                              .collection('ventes')
+                              .where('user_id', isEqualTo: user?.uid)
+                              .snapshots(),
+                          builder:
+                              (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                            return ListView.builder(
+                                scrollDirection: Axis.vertical,
+                                shrinkWrap: true,
+                                itemCount: snapshot.data?.docs.length,
+                                itemBuilder: (context, i) {
+                                  if (snapshot.hasData) {
+                                    QueryDocumentSnapshot x =
+                                        snapshot.data!.docs[i];
+                                        var ds = snapshot.data!.docs;
+                                        double sum = 0.0;
+                                        for (var s = 0; s < ds.length; s++) {
+                                          sum  += int.parse(ds[s]['montant']);
+                                          montant = sum;
+                                        }
 
-                                    if (!snapshot.hasData) {
-                                      return Container();
-                                    }
-                                    return Container(
-                                      child: Column(
-                                        children: [
-                                          Text('chargement en cours'),
-                                          CircularProgressIndicator(),
-                                        ],
-                                      ),
+                                    return Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            Text('OK');
+                                          },
+                                          child: Container(
+                                              margin: EdgeInsets.all(10),
+                                              padding: EdgeInsets.all(5),
+                                              height: 200,
+                                              width: 100,
+                                              decoration: BoxDecoration(
+                                                color: Colors.orange.shade300,
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              child: Column(
+                                                children: [
+                                                  Icon(Icons
+                                                      .phone_android_outlined),
+                                                  Text('${x['montant']}'),
+                                                  Text('Montant  $sum'),
+                                                ],
+                                              )),
+                                        ),
+                                      ]),
                                     );
-                                  });
-                            })),
-                  ),
-          ],
+                                  }
+                                  if (!snapshot.hasData) {
+                                    return Container(
+                                      height: 70,
+                                      width: 70,
+                                      child: const CircularProgressIndicator(),
+                                    );
+                                  }
+                                  return Container(
+                                    child: Column(
+                                      children: [
+                                        Text('chargement en cours'),
+                                        CircularProgressIndicator(),
+                                      ],
+                                    ),
+                                  );
+                                });
+                          })),
+            ]),
+          ),
         ),
       ),
       bottomNavigationBar: user?.email != null
           ? Container(
-              height: 100,
+              height: 120,
               decoration:
                   BoxDecoration(color: Colors.grey.shade100, boxShadow: [
                 BoxShadow(blurRadius: 4),
               ]),
-              child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
                 child: Column(
                   children: [
                     // vente == null
                     //     ? CircularProgressIndicator()
                     //     :
                     Text(
-                      'Montant total : Montant total des produits dans le panier F CFA',
+                      ' $montant F CFA',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                     ),

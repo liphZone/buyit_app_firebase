@@ -17,7 +17,6 @@ class _HomeScreenState extends State<HomeScreen> {
   int selectIndex = 0;
   List<Widget> screens = [
     ArticleScreen(),
-    // CategorieScreen(),
     PanierScreen(),
     CompteScreen(),
   ];
