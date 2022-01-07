@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:buy_it_app/widgets/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class CategorieFormScreen extends StatefulWidget {
@@ -18,6 +19,13 @@ class _CategorieFormScreenState extends State<CategorieFormScreen> {
   TextEditingController subCategorieController = TextEditingController();
 
   bool load = false;
+  User? user;
+
+  void userData() async {
+    setState(() {
+      user = FirebaseAuth.instance.currentUser;
+    });
+  }
 
   addCategorie() async {
     var libelle = libelleController.text;
@@ -32,12 +40,20 @@ class _CategorieFormScreenState extends State<CategorieFormScreen> {
       setState(() {
         load = !load;
       });
-      Navigator.pop(context);
+      Navigator.of(context);
+      libelleController.clear();
+      descriptionController.clear();
     } on FirebaseException catch (e) {
       print(e);
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Erreur $e')));
     }
+  }
+
+  @override
+  void initState() {
+    userData();
+    super.initState();
   }
 
   @override

@@ -34,13 +34,12 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
   var qvChangeController = TextEditingController();
 
   User? user;
-  
+
   void userData() async {
     setState(() {
       user = FirebaseAuth.instance.currentUser;
     });
   }
-
 
   void addQuantite() {
     setState(() {
@@ -54,15 +53,29 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
     });
   }
 
+  verifyCollection() async {
+    FirebaseFirestore.instance.collection('paniers').get().then((snapshot) {
+      if (snapshot.size == 0) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Inexistant')));
+      }
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('${snapshot.docs.length}')));
+    });
+  }
+
   addVente() async {
     try {
-      await FirebaseFirestore.instance.collection('ventes').doc().set({
+      await FirebaseFirestore.instance.collection('ventes').doc(widget.reference).set({
         'reference': 'V-${Random().nextInt(100000)}',
         'article_id': widget.reference,
+        'article': widget.libelle,
         'prix_vente': widget.prix,
         'quantite_vendue': qvChangeController.text,
         'user_id': user?.uid,
-        'montant': '${int.parse(widget.prix) * int.parse(qvChangeController.text)}',
+        'montant':
+            '${int.parse(widget.prix) * int.parse(qvChangeController.text)}',
+        'image': widget.image
       });
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Nouveau produit ajouté au panier')));

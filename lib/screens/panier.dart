@@ -11,11 +11,49 @@ class PanierScreen extends StatefulWidget {
 
 class _PanierScreenState extends State<PanierScreen> {
   User? user;
-  
- double? montant;
+
+  double? montant;
+
+//Verifier s'il ya quelque chose dans le panier
+  // existPanier() async {
+  //   await FirebaseFirestore.instance
+  //       .collection('paniers')
+  //       .get()
+  //       .then((snapshot) {
+  //     if (snapshot.size == 0) {
+  //       return Container(
+  //         height: 200,
+  //         width: 200,
+  //         child: Image.asset(
+  //           'assets/images/panier_vide.png',
+  //           height: 100,
+  //         ),
+  //       );
+  //     }
+  //   });
+  // }
+
+  addPanier() async {
+    try {
+      await FirebaseFirestore.instance.collection('ventes').doc(user?.uid).set({
+        'user_id': user?.uid,
+        'montant': montant,
+      });
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Panier mis a jour')));
+
+      Navigator.pop(context);
+    } on FirebaseException catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Erreur $e')));
+    }
+  }
+
   @override
   void initState() {
     user = FirebaseAuth.instance.currentUser;
+    // existPanier();
     super.initState();
   }
 
@@ -45,11 +83,11 @@ class _PanierScreenState extends State<PanierScreen> {
         color: Colors.grey.shade200,
         child: SingleChildScrollView(
           physics: ScrollPhysics(),
-          child: Container(
-            height: MediaQuery.of(context).size.height * .70,
-            child: Column(children: [
-              user?.email == null
-                  ? Padding(
+          child: Column(children: [
+            user?.email == null
+                ? Container(
+                    height: MediaQuery.of(context).size.height * .70,
+                    child: Padding(
                       padding: const EdgeInsets.all(20),
                       child: Center(
                         child: Column(
@@ -73,80 +111,109 @@ class _PanierScreenState extends State<PanierScreen> {
                           ],
                         ),
                       ),
-                    )
-                  : Container(
-                      height: 300,
-                      width: MediaQuery.of(context).size.width,
-                      child: StreamBuilder(
-                          stream: FirebaseFirestore.instance
-                              .collection('ventes')
-                              .where('user_id', isEqualTo: user?.uid)
-                              .snapshots(),
-                          builder:
-                              (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                            return ListView.builder(
-                                scrollDirection: Axis.vertical,
-                                shrinkWrap: true,
-                                itemCount: snapshot.data?.docs.length,
-                                itemBuilder: (context, i) {
-                                  if (snapshot.hasData) {
-                                    QueryDocumentSnapshot x =
-                                        snapshot.data!.docs[i];
-                                        var ds = snapshot.data!.docs;
-                                        double sum = 0.0;
-                                        for (var s = 0; s < ds.length; s++) {
-                                          sum  += int.parse(ds[s]['montant']);
-                                          montant = sum;
-                                        }
+                    ),
+                  )
+                : Container(
+                    height: MediaQuery.of(context).size.height * .70,
+                    child: StreamBuilder(
+                        stream: FirebaseFirestore.instance
+                            .collection('ventes')
+                            .where('user_id', isEqualTo: user?.uid)
+                            .snapshots(),
+                        builder:
+                            (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                          return ListView.builder(
+                              scrollDirection: Axis.vertical,
+                              shrinkWrap: true,
+                              itemCount: snapshot.data?.docs.length,
+                              itemBuilder: (context, i) {
+                                if (snapshot.hasData) {
+                                  QueryDocumentSnapshot x =
+                                      snapshot.data!.docs[i];
+                                  var ds = snapshot.data!.docs;
+                                  double sum = 0.0;
+                                  for (var counter = 0;
+                                      counter < ds.length;
+                                      counter++) {
+                                    sum += int.parse(ds[counter]['montant']);
+                                      montant = sum;
+                                  }
 
-                                    return Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(children: [
-                                        GestureDetector(
-                                          onTap: () {
-                                            Text('OK');
-                                          },
-                                          child: Container(
-                                              margin: EdgeInsets.all(10),
-                                              padding: EdgeInsets.all(5),
-                                              height: 200,
-                                              width: 100,
-                                              decoration: BoxDecoration(
-                                                color: Colors.orange.shade300,
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
+                                  return Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        //Fonction de suppression du panier
+                                      },
+                                      child: Row(children: [
+                                        Container(
+                                          height: 100,
+                                          width: 100,
+                                          child: Image.network(x['image']),
+                                        ),
+                                        Container(
+                                          height: 100,
+                                          width: 100,
+                                          child: Column(
+                                            children: [
+                                              Text(
+                                                '${x['article']}',
+                                                style: TextStyle(fontSize: 20),
                                               ),
-                                              child: Column(
+                                              Row(
                                                 children: [
-                                                  Icon(Icons
-                                                      .phone_android_outlined),
-                                                  Text('${x['montant']}'),
-                                                  Text('Montant  $sum'),
+                                                  Text('${x['prix_vente']}'),
+                                                  Text('\t x \t'),
+                                                  Text(
+                                                      '${x['quantite_vendue']}'),
                                                 ],
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          height: 70,
+                                          width: 70,
+                                          decoration: BoxDecoration(
+                                            boxShadow: [
+                                              BoxShadow(
+                                                blurRadius: 2,
+                                              ),
+                                            ],
+                                            color: Colors.grey.shade50,
+                                            borderRadius:
+                                                BorderRadius.circular(50),
+                                          ),
+                                          child: IconButton(
+                                              onPressed: () {},
+                                              icon: Icon(
+                                                Icons.delete,
+                                                size: 35,
+                                                color: Colors.red,
                                               )),
                                         ),
                                       ]),
-                                    );
-                                  }
-                                  if (!snapshot.hasData) {
-                                    return Container(
-                                      height: 70,
-                                      width: 70,
-                                      child: const CircularProgressIndicator(),
-                                    );
-                                  }
-                                  return Container(
-                                    child: Column(
-                                      children: [
-                                        Text('chargement en cours'),
-                                        CircularProgressIndicator(),
-                                      ],
                                     ),
                                   );
-                                });
-                          })),
-            ]),
-          ),
+                                }
+                                if (!snapshot.hasData) {
+                                  return Container(
+                                    height: 70,
+                                    width: 70,
+                                    child: const CircularProgressIndicator(),
+                                  );
+                                }
+                                return Container(
+                                  child: Column(
+                                    children: [
+                                      Text('chargement en cours'),
+                                      CircularProgressIndicator(),
+                                    ],
+                                  ),
+                                );
+                              });
+                        })),
+          ]),
         ),
       ),
       bottomNavigationBar: user?.email != null
@@ -164,68 +231,28 @@ class _PanierScreenState extends State<PanierScreen> {
                     //     ? CircularProgressIndicator()
                     //     :
                     Text(
-                      ' $montant F CFA',
+                      'Montant total: $montant F CFA',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                     ),
-                    Visibility(
-                      // visible: articleList.length == 0 ? false : true,
-                      child: FlatButton(
-                        color: Colors.blue,
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Paiement .....')));
-                          showDialog(
-                              context: context,
-                              builder: (_) => AlertDialog(
-                                    title:
-                                        Text('Veuillez saisir votre contact'),
-                                    content: Container(
-                                      height: 200,
-                                      child: Column(
-                                        children: [
-                                          FlatButton(
-                                              color: Colors.blue,
-                                              textColor: Colors.white,
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          20)),
-                                              onPressed: () {
-                                                //Payment page
-                                              },
-                                              child: Text('Flooz ')),
-                                          FlatButton(
-                                              color: Colors.blue,
-                                              textColor: Colors.white,
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          20)),
-                                              onPressed: () {
-                                                //Payment Tmoney
-                                              },
-                                              child: Text('Tmoney')),
-                                        ],
-                                      ),
-                                    ),
-                                    actions: [
-                                      FlatButton(
-                                          onPressed: () {
-                                            // Navigator.pop(context);
-                                            // addPayment();
-                                          },
-                                          child: Text('Verifier')),
-                                    ],
-                                  ));
-                        },
-                        child: Text(
-                          'Commander',
-                          style: TextStyle(fontSize: 20, color: Colors.white),
+                    Row(
+                      children: [
+                        IconButton(onPressed: () {}, icon: Icon(Icons.refresh)),
+                        FlatButton(
+                          color: Colors.blue,
+                          onPressed: () {
+                            // ScaffoldMessenger.of(context).showSnackBar(
+                            //     SnackBar(content: Text('Paiement .....')));
+                            
+                          },
+                          child: Text(
+                            'Commander',
+                            style: TextStyle(fontSize: 20, color: Colors.white),
+                          ),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30)),
                         ),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30)),
-                      ),
+                      ],
                     )
                   ],
                 ),

@@ -23,9 +23,15 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
   TextEditingController pwdController = TextEditingController();
   TextEditingController pwdConfirmController = TextEditingController();
 
+  void userData() async {
+    setState(() {
+      user = FirebaseAuth.instance.currentUser;
+    });
+  }
+
   Future<void> registerUser() async {
     try {
-      await FirebaseFirestore.instance.collection('users').doc().set({
+      await FirebaseFirestore.instance.collection('users').doc(user?.uid).set({
         'name': nameController.text,
         'email': emailController.text,
         //le mot de passe n'est pas enregistré quelque soit la methode que j'utilise
@@ -60,6 +66,12 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
           .showSnackBar(SnackBar(content: Text('${e.message}')));
       print('Erreur : ${e.message}');
     }
+  }
+
+  @override
+  void initState() {
+    userData();
+    super.initState();
   }
 
   @override

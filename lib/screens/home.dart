@@ -22,16 +22,17 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   User? user;
-  @override
-  void initState() {
-    onRefresh(FirebaseAuth.instance.currentUser);
-    super.initState();
+
+  void userData() async {
+    setState(() {
+      user = FirebaseAuth.instance.currentUser;
+    });
   }
 
-  onRefresh(userCred) {
-    setState(() {
-      user = userCred;
-    });
+  @override
+  void initState() {
+    userData();
+    super.initState();
   }
 
   @override
