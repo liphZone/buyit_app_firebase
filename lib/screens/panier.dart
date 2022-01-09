@@ -14,57 +14,25 @@ class _PanierScreenState extends State<PanierScreen> {
 
   double? montant;
 
-//Verifier s'il ya quelque chose dans le panier
-  // existPanier() async {
-  //   await FirebaseFirestore.instance
-  //       .collection('paniers')
-  //       .get()
-  //       .then((snapshot) {
-  //     if (snapshot.size == 0) {
-  //       return Container(
-  //         height: 200,
-  //         width: 200,
-  //         child: Image.asset(
-  //           'assets/images/panier_vide.png',
-  //           height: 100,
-  //         ),
-  //       );
-  //     }
-  //   });
-  // }
+  countArticlePanier() async {
+    await FirebaseFirestore.instance
+        .collection('paniers')
+        .get()
+        .then((snapshot) {
+      return snapshot.docs.length;
+    });
+  }
 
-  // addPanier() async {
-  //   try {
-  //     await FirebaseFirestore.instance.collection('ventes').doc(user?.uid).set({
-  //       'user_id': user?.uid,
-  //       'montant': montant,
-  //     });
-  //     ScaffoldMessenger.of(context)
-  //         .showSnackBar(SnackBar(content: Text('Panier mis a jour')));
-
-  //     Navigator.pop(context);
-  //   } on FirebaseException catch (e) {
-  //     print(e);
-  //     ScaffoldMessenger.of(context)
-  //         .showSnackBar(SnackBar(content: Text('Erreur $e')));
-  //   }
-  // }
-
-  basket() async {
+  showPanier() async {
     try {
       await FirebaseFirestore.instance
           .collection('ventes')
           .get()
           .then((snapshot) {
-        //  ScaffoldMessenger.of(context)
-        // .showSnackBar(SnackBar(content: Text('Taille : ${snapshot.docs.length}')));
         double sum = 0.0;
         for (var counter = 0; counter < snapshot.docs.length; counter++) {
           sum += int.parse(snapshot.docs[counter]['montant']);
         }
-        Text('$sum');
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Somme : $sum')));
       });
     } on FirebaseException catch (e) {
       print(e);
@@ -73,11 +41,12 @@ class _PanierScreenState extends State<PanierScreen> {
     }
   }
 
+  deleteArticle() async{}
+
   @override
   void initState() {
     user = FirebaseAuth.instance.currentUser;
-    // existPanier();
-    basket();
+    showPanier();
     super.initState();
   }
 
@@ -85,13 +54,8 @@ class _PanierScreenState extends State<PanierScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
+        title: Column(
           children: [
-            Text(
-              'BUY IT',
-              style: TextStyle(color: Colors.black),
-            ),
-            Spacer(),
             Text(
               'Mon Panier',
               style: TextStyle(color: Colors.black),
@@ -154,15 +118,6 @@ class _PanierScreenState extends State<PanierScreen> {
                                 if (snapshot.hasData) {
                                   QueryDocumentSnapshot x =
                                       snapshot.data!.docs[i];
-                                  var ds = snapshot.data!.docs;
-                                  double sum = 0.0;
-                                  for (var counter = 0;
-                                      counter < ds.length;
-                                      counter++) {
-                                    sum += int.parse(ds[counter]['montant']);
-                                    montant = sum;
-                                  }
-
                                   return Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: GestureDetector(
@@ -192,7 +147,6 @@ class _PanierScreenState extends State<PanierScreen> {
                                                       '${x['quantite_vendue']}'),
                                                 ],
                                               ),
-                                              Text('Somme : $sum'),
                                             ],
                                           ),
                                         ),
@@ -282,7 +236,9 @@ class _PanierScreenState extends State<PanierScreen> {
                                   ),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(30)),
-                                )
+                                ),
+
+                                Text('${x['total_article']} articles dans le panier'),
                               ]),
                             );
                           }
@@ -290,7 +246,7 @@ class _PanierScreenState extends State<PanierScreen> {
                             return Container(
                               height: 70,
                               width: 70,
-                              child: const CircularProgressIndicator(),
+                              child:  Text('Votre panier est vide'),
                             );
                           }
                           return Container(

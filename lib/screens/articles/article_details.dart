@@ -31,6 +31,7 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
   bool load = false;
 
   int qValue = 1;
+
   var qvChangeController = TextEditingController();
 
   User? user;
@@ -43,6 +44,9 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
 
   void addQuantite() {
     setState(() {
+      if (qValue > int.parse(widget.quantite) - 7) {
+        qValue = int.parse(widget.quantite) - 7;
+      }
       qValue++;
     });
   }
@@ -50,17 +54,6 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
   void removeQuantite() {
     setState(() {
       qValue == 1 ? qValue = qValue : qValue--;
-    });
-  }
-
-  verifyCollection() async {
-    FirebaseFirestore.instance.collection('paniers').get().then((snapshot) {
-      if (snapshot.size == 0) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Inexistant')));
-      }
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('${snapshot.docs.length}')));
     });
   }
 
@@ -93,23 +86,21 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
     }
   }
 
-  basket() async {
+  addPanier() async {
     try {
       await FirebaseFirestore.instance
           .collection('ventes')
           .get()
           .then((snapshot) {
-        //  ScaffoldMessenger.of(context)
-        // .showSnackBar(SnackBar(content: Text('Taille : ${snapshot.docs.length}')));
         double sum = 0.0;
         for (var counter = 0; counter < snapshot.docs.length; counter++) {
           sum += int.parse(snapshot.docs[counter]['montant']);
         }
-        FirebaseFirestore.instance
-            .collection('paniers')
-            .doc(widget.reference)
-            .set({'user_id': user?.uid, 'montant': sum 
-            });
+        FirebaseFirestore.instance.collection('paniers').doc(user?.uid).set({
+          'user_id': user?.uid,
+          'montant': sum,
+          'total_article': snapshot.docs.length
+        });
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('Panier add')));
       });
@@ -117,6 +108,19 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
       print(e);
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Erreur $e')));
+    }
+  }
+
+  void updateArticle() async {
+    try {
+      firestore.collection('articles').doc(widget.reference).update({
+        'quantite':
+            int.parse(widget.quantite) - int.parse(qvChangeController.text),
+      });
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Mise à jour réussi')));
+    } on FirebaseException catch (e) {
+      print(e);
     }
   }
 
@@ -178,10 +182,13 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
               'Détails: ${widget.description}',
               style: TextStyle(fontSize: 20),
             ),
-            Text(
-              'Quantité disponible:${widget.quantite}',
-              style: TextStyle(fontSize: 20),
-            ),
+            int.parse(widget.quantite) >= int.parse(widget.quantite) / 2 - 2
+                ? Text(
+                    'Quantité disponible: ${widget.quantite}',
+                    style: TextStyle(fontSize: 20),
+                  )
+                : Text('Quantité disponible: ${widget.quantite}',
+                    style: TextStyle(fontSize: 20, color: Colors.red)),
             SizedBox(
               height: 10,
             ),
@@ -231,7 +238,8 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
                           FlatButton(
                               onPressed: () {
                                 addVente();
-                                basket();
+                                addPanier();
+                                updateArticle();
                               },
                               child: Text('Confirmer')),
                           FlatButton(
@@ -301,10 +309,13 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
                           ),
                         )));
               },
-              child: Text(
-                'Ajouter au Panier',
-                style: TextStyle(color: Colors.white),
-              ),
+              child: int.parse(widget.quantite) >=
+                      int.parse(widget.quantite) / 2 - 2
+                  ? Text(
+                      'Ajouter au Panier',
+                      style: TextStyle(color: Colors.white),
+                    )
+                  : Text('Quantité en stock insuffisante pour le moment'),
             ),
           ],
         ),

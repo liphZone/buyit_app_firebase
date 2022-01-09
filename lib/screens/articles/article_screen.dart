@@ -58,27 +58,6 @@ class _ArticleScreenState extends State<ArticleScreen> {
                   ),
                 ),
               )),
-          // Padding(
-          //   padding: const EdgeInsets.all(8.0),
-          //   child: Container(
-          //     height: 50,
-          //     width: 50,
-          //     decoration: BoxDecoration(
-          //         color: Colors.blue.shade400,
-          //         borderRadius: BorderRadius.circular(30)),
-          //     child: IconButton(
-          //         onPressed: () {
-          //           Navigator.push(
-          //               context,
-          //               MaterialPageRoute(
-          //                   builder: (context) => ArticlSearchScreen(
-          //                         article: searchList,
-          //                       )));
-          //           searchArticle();
-          //         },
-          //         icon: Icon(Icons.search)),
-          //   ),
-          // ),
         ],
       ),
       body: Container(

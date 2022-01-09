@@ -31,7 +31,7 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
 
   Future<void> registerUser() async {
     try {
-      await FirebaseFirestore.instance.collection('users').doc(user?.uid).set({
+      await FirebaseFirestore.instance.collection('users').doc().set({
         'name': nameController.text,
         'email': emailController.text,
         //le mot de passe n'est pas enregistré quelque soit la methode que j'utilise
@@ -45,7 +45,6 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Votre compte a été crée')));
       Navigator.pop(context);
-      print('User : ${userCredential.user}');
     } on FirebaseException catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('${e.message}')));

@@ -16,20 +16,6 @@ class CategorieTransitionScreen extends StatefulWidget {
 class _CategorieTransitionScreenState extends State<CategorieTransitionScreen> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  Future<void> showCategories() async {
-    DocumentSnapshot documentSnapshot;
-    try {
-      documentSnapshot = await firestore.collection('categories').doc().get();
-      // ScaffoldMessenger.of(context)
-      //     .showSnackBar(SnackBar(content: Text('Lecture réussi')));
-      print('CATEGORIES : ${documentSnapshot.data()}');
-    } on FirebaseException catch (e) {
-      print(e);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Erreur $e')));
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

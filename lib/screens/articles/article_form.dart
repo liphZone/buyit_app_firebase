@@ -62,6 +62,8 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
 
   addArticle() async {
     var libelle = libelleController.text;
+    final ref = 'PROD-${Random().nextInt(100000)}';
+
     var imageFile = FirebaseStorage.instance
         .ref()
         .child('articles')
@@ -71,8 +73,8 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
     url = await snapshot.ref.getDownloadURL();
 
     try {
-      await FirebaseFirestore.instance.collection('articles').doc().set({
-        'reference': 'PROD-${Random().nextInt(100000)}',
+      await FirebaseFirestore.instance.collection('articles').doc(ref).set({
+        'reference': ref,
         'libelle': '${libelle[0].toUpperCase()}${libelle.substring(1)}',
         'description': descriptionController.text,
         'categorie_id': widget.categorieReference,
@@ -175,7 +177,7 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
                   controller: quantiteController,
                   keyboardType: TextInputType.number,
                   decoration: kInputDecoration('Quantité'),
-                  validator: (val) => val!.isEmpty
+                  validator: (val) => val!.isEmpty && val.length >= 10
                       ? 'Veuillez saisir la quantité à enregistrer !'
                       : null,
                 ),

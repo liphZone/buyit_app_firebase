@@ -27,13 +27,16 @@ class _CategorieFormScreenState extends State<CategorieFormScreen> {
     });
   }
 
+  
+
   addCategorie() async {
     var libelle = libelleController.text;
+    final ref = 'CAT-${Random().nextInt(100000)}';
     try {
-      await FirebaseFirestore.instance.collection('categories').doc().set({
-        'reference': 'CAT-${Random().nextInt(100000)}',
+      await FirebaseFirestore.instance.collection('categories').doc(ref).set({
+        'reference': ref,
         'libelle': '${libelle[0].toUpperCase()}${libelle.substring(1)}',
-        'description': '${descriptionController.text}',
+        'description': descriptionController.text,
       });
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Vous avez ajouté une catégorie')));
@@ -111,7 +114,7 @@ class _CategorieFormScreenState extends State<CategorieFormScreen> {
                           child: Text(
                             'Enregistrer',
                             style: TextStyle(color: Colors.white),
-                          ))
+                          )),
                 ],
               ),
             ),
