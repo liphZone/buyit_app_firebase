@@ -3,6 +3,7 @@ import 'package:buy_it_app/screens/auth/connection.dart';
 import 'package:buy_it_app/screens/categories/categorie_form.dart';
 import 'package:buy_it_app/screens/home.dart';
 import 'package:buy_it_app/screens/panier.dart';
+import 'package:buy_it_app/screens/persons/person_form.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
         'categorie_form': (context) => const CategorieFormScreen(),
         'panier': (context) => const PanierScreen(),
         'auth': (context) => const ConnectionScreen(),
+        'person_form': (context) => const PersonFormScreen(),
       },
       debugShowCheckedModeBanner: false,
       title: 'BUY IT',

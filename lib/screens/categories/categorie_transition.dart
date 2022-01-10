@@ -3,7 +3,6 @@ import 'package:buy_it_app/screens/articles/article_form.dart';
 import 'package:buy_it_app/widgets/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-// import 'package:firebase_core/firebase_core.dart';
 
 class CategorieTransitionScreen extends StatefulWidget {
   const CategorieTransitionScreen({Key? key}) : super(key: key);

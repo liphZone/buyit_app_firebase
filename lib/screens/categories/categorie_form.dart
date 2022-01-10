@@ -27,8 +27,6 @@ class _CategorieFormScreenState extends State<CategorieFormScreen> {
     });
   }
 
-  
-
   addCategorie() async {
     var libelle = libelleController.text;
     final ref = 'CAT-${Random().nextInt(100000)}';

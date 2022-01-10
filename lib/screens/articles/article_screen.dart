@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:buy_it_app/screens/articles/article_details.dart';
 import 'package:buy_it_app/screens/categories/categorie_screen.dart';
 import 'package:buy_it_app/screens/search_screen.dart';
 import 'package:buy_it_app/widgets/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class ArticleScreen extends StatefulWidget {
   const ArticleScreen({Key? key}) : super(key: key);
@@ -14,12 +17,48 @@ class ArticleScreen extends StatefulWidget {
 
 class _ArticleScreenState extends State<ArticleScreen> {
   TextEditingController searchController = TextEditingController();
+  late StreamSubscription internetSub;
+  bool hasInternet = false;
+  checkConnection() async {
+    internetSub = InternetConnectionChecker().onStatusChange.listen((event) {
+      final hasInternet = event == InternetConnectionStatus.connected;
+
+      if (event == InternetConnectionStatus.connected) {
+        setState(() {
+          this.hasInternet = hasInternet;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Status : $hasInternet',
+                style: TextStyle(color: Colors.white))));
+      } else if (event == InternetConnectionStatus.disconnected) {
+        setState(() {
+          this.hasInternet = hasInternet;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Status : $hasInternet',
+                style: TextStyle(color: Colors.white))));
+      }
+      // setState(() {
+      //   this.hasInternet = hasInternet;
+      // });
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      //     content: Text('Status : $hasInternet',
+      //         style: TextStyle(color: Colors.white))));
+    });
+  }
+
+  @override
+  void initState() {
+    checkConnection();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'BUY IT',
+          'BUY-IT',
           style: TextStyle(color: Colors.black),
         ),
         backgroundColor: Colors.white,
@@ -98,9 +137,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
                 height: 100,
                 width: MediaQuery.of(context).size.width,
                 child: StreamBuilder(
-                    stream: firestore
-                        .collection('categories')
-                        .snapshots(),
+                    stream: firestore.collection('categories').snapshots(),
                     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                       return ListView.builder(
                           scrollDirection: Axis.horizontal,
@@ -198,9 +235,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
                   height: 300,
                   width: MediaQuery.of(context).size.width,
                   child: StreamBuilder(
-                      stream: firestore
-                          .collection('articles')
-                          .snapshots(),
+                      stream: firestore.collection('articles').snapshots(),
                       builder:
                           (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                         return GridView.builder(

@@ -45,9 +45,7 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
   }
 
   void userData() async {
-    setState(() {
       user = FirebaseAuth.instance.currentUser;
-    });
   }
 
   setSearchParam() {

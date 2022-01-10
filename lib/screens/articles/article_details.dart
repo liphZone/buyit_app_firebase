@@ -4,6 +4,7 @@ import 'package:buy_it_app/widgets/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class ArticleDetailScreen extends StatefulWidget {
   final reference;
@@ -104,7 +105,7 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
     }
   }
 
-  void updateArticle() async {
+  updateArticle() async {
     try {
       firestore.collection('articles').doc(widget.reference).update({
         'quantite':
@@ -117,10 +118,23 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
     }
   }
 
+  bool hasInternet = false;
+  checkConnection() async {
+    InternetConnectionChecker().onStatusChange.listen((event) {
+      final hasInternet = event == InternetConnectionStatus.connected;
+      setState(() {
+        this.hasInternet = hasInternet;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Status : $hasInternet',
+              style: TextStyle(color: Colors.white))));
+    });
+  }
+
   @override
   void initState() {
-    qvChangeController.text = '$qValue';
-    userData();
+    user = FirebaseAuth.instance.currentUser;
+    checkConnection();
     super.initState();
   }
 
@@ -225,7 +239,7 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
                     ),
                     onPressed: () {
                       showDialog(
-                          context: context, 
+                          context: context,
                           builder: (_) => AlertDialog(
                               title: Text(
                                   'Vous allez ajouter dans votre panier  ${int.parse(widget.quantite) / 4}?'),

@@ -14,22 +14,20 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int selectIndex = 0;
+
   List<Widget> screens = [
-    ArticleScreen(),
+    ArticleScreen( ),
     PanierScreen(),
     CompteScreen(),
   ];
 
   User? user;
-  
 
   void userData() async {
     setState(() {
       user = FirebaseAuth.instance.currentUser;
     });
   }
-
-
 
   @override
   void initState() {
@@ -54,7 +52,6 @@ class _HomeScreenState extends State<HomeScreen> {
           items: [
             BottomNavigationBarItem(
                 icon: Icon(Icons.home_filled), label: 'Accueil'),
-            // BottomNavigationBarItem(icon: Icon(Icons.list_rounded), label: 'Catégorie'),
             BottomNavigationBarItem(
                 icon: Icon(Icons.shopping_cart_outlined), label: 'Panier'),
             BottomNavigationBarItem(
