@@ -16,22 +16,16 @@ class _HomeScreenState extends State<HomeScreen> {
   int selectIndex = 0;
 
   List<Widget> screens = [
-    ArticleScreen( ),
+    ArticleScreen(),
     PanierScreen(),
     CompteScreen(),
   ];
 
   User? user;
 
-  void userData() async {
-    setState(() {
-      user = FirebaseAuth.instance.currentUser;
-    });
-  }
-
   @override
   void initState() {
-    userData();
+    user = FirebaseAuth.instance.currentUser;
     super.initState();
   }
 

@@ -23,12 +23,7 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
   TextEditingController pwdController = TextEditingController();
   TextEditingController pwdConfirmController = TextEditingController();
 
-  void userData() async {
-    setState(() {
-      user = FirebaseAuth.instance.currentUser;
-    });
-  }
-
+  //Fonction firebase inscription
   Future<void> registerUser() async {
     try {
       await firestore.collection('users').doc(emailController.text).set({
@@ -52,6 +47,7 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
     }
   }
 
+  //fonction firebase connexion
   Future<void> loginUser() async {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
@@ -69,7 +65,7 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
 
   @override
   void initState() {
-    userData();
+    user = FirebaseAuth.instance.currentUser;
     super.initState();
   }
 

@@ -20,13 +20,7 @@ class _CategorieFormScreenState extends State<CategorieFormScreen> {
 
   bool load = false;
   User? user;
-
-  void userData() async {
-    setState(() {
-      user = FirebaseAuth.instance.currentUser;
-    });
-  }
-
+  //ajout de la categorie dans la collection categories
   addCategorie() async {
     var libelle = libelleController.text;
     final ref = 'CAT-${Random().nextInt(100000)}';
@@ -53,7 +47,7 @@ class _CategorieFormScreenState extends State<CategorieFormScreen> {
 
   @override
   void initState() {
-    userData();
+    user = FirebaseAuth.instance.currentUser;
     super.initState();
   }
 

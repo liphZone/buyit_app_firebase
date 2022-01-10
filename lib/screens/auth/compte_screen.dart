@@ -2,7 +2,6 @@ import 'package:buy_it_app/screens/categories/categorie_transition.dart';
 import 'package:buy_it_app/widgets/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class CompteScreen extends StatefulWidget {
   const CompteScreen({Key? key}) : super(key: key);
@@ -23,24 +22,9 @@ class _CompteScreenState extends State<CompteScreen> {
     Navigator.pushNamed(context, 'home');
   }
 
-  //Fonction de verification de connexion internet
-  bool hasInternet = false;
-  checkConnection() async {
-    InternetConnectionChecker().onStatusChange.listen((event) {
-      final hasInternet = event == InternetConnectionStatus.connected;
-      setState(() {
-        this.hasInternet = hasInternet;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Status : $hasInternet',
-              style: TextStyle(color: Colors.white))));
-    });
-  }
-
   @override
   void initState() {
     user = FirebaseAuth.instance.currentUser;
-    checkConnection();
     super.initState();
   }
 

@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:buy_it_app/screens/home.dart';
 import 'package:buy_it_app/widgets/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -23,6 +22,7 @@ class _PersonFormScreenState extends State<PersonFormScreen> {
   TextEditingController contactController = TextEditingController();
   TextEditingController companyController = TextEditingController();
 
+  //Ajout de la personne dans la collection persons
   addPerson() async {
     final ref = 'PERS-${Random().nextInt(100000)}';
     try {
@@ -51,6 +51,7 @@ class _PersonFormScreenState extends State<PersonFormScreen> {
     }
   }
 
+  //Mise a jour du status dans la collection users
   updateStatusUser() async {
     try {
       firestore.collection('users').doc(user?.email).update({

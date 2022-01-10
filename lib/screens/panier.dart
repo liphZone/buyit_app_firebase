@@ -2,7 +2,6 @@ import 'package:buy_it_app/widgets/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class PanierScreen extends StatefulWidget {
   const PanierScreen({Key? key}) : super(key: key);
@@ -13,6 +12,7 @@ class PanierScreen extends StatefulWidget {
 
 class _PanierScreenState extends State<PanierScreen> {
   User? user;
+  //Fonction d'affichage du contenu la collection paniers
   showPanier() async {
     try {
       await firestore.collection('ventes').get().then((snapshot) {
@@ -28,6 +28,7 @@ class _PanierScreenState extends State<PanierScreen> {
     }
   }
 
+  //Fonction de suppression  d'un article dans la collection paniers
   deleteArticlePanier(e) async {
     try {
       firestore.collection('ventes').doc(e).delete();
@@ -39,6 +40,7 @@ class _PanierScreenState extends State<PanierScreen> {
     }
   }
 
+  //Fonction de mise a jour de la collection paniers apres suppression
   updatePanier() async {
     try {
       await firestore.collection('ventes').get().then((snapshot) {
@@ -61,7 +63,8 @@ class _PanierScreenState extends State<PanierScreen> {
     }
   }
 
-  updateArticle(doc, q) async {
+  //Fonction de mise a jour de quantite de la collection articles apres suppression( incrementation de la quantite)
+  updateQuantiteArticle(doc, q) async {
     DocumentSnapshot documentSnapshot;
     try {
       //recuperer la quantité de l'article
@@ -79,37 +82,12 @@ class _PanierScreenState extends State<PanierScreen> {
     }
   }
 
-   bool hasInternet = false;
-  checkConnection() async {
-    InternetConnectionChecker().onStatusChange.listen((event) {
-      final hasInternet = event == InternetConnectionStatus.connected;
-
-      if (event == InternetConnectionStatus.connected) {
-        setState(() {
-          this.hasInternet = hasInternet;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Status : $hasInternet',
-                style: TextStyle(color: Colors.white))));
-      } else if (event == InternetConnectionStatus.disconnected) {
-        setState(() {
-          this.hasInternet = hasInternet;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Status : $hasInternet',
-                style: TextStyle(color: Colors.white))));
-      }
-    });
-  }
-
   @override
   void initState() {
     user = FirebaseAuth.instance.currentUser;
     showPanier();
-    checkConnection();
     super.initState();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -237,7 +215,7 @@ class _PanierScreenState extends State<PanierScreen> {
                                                                 deleteArticlePanier(
                                                                     x['article_id']);
                                                                 updatePanier();
-                                                                updateArticle(
+                                                                updateQuantiteArticle(
                                                                     x[
                                                                         'article_id'],
                                                                     int.parse(x[

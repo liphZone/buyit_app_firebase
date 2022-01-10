@@ -4,7 +4,6 @@ import 'package:buy_it_app/widgets/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class ArticleDetailScreen extends StatefulWidget {
   final reference;
@@ -34,14 +33,9 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
   int qValue = 1;
 
   var qvChangeController = TextEditingController();
-
   User? user;
-  void userData() async {
-    setState(() {
-      user = FirebaseAuth.instance.currentUser;
-    });
-  }
 
+  //Fonction incrementation quantité
   void addQuantite() {
     setState(() {
       if (qValue < 5) {
@@ -51,12 +45,14 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
     });
   }
 
+  //Fonction decrmentation quantite
   void removeQuantite() {
     setState(() {
       qValue == 1 ? qValue = qValue : qValue--;
     });
   }
 
+  //Ajout de produit dans la collection ventes
   addVente() async {
     try {
       await firestore.collection('ventes').doc(widget.reference).set({
@@ -83,6 +79,7 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
     }
   }
 
+  //Ajout du produit dans la collection paniers
   addPanier() async {
     try {
       await firestore.collection('ventes').get().then((snapshot) {
@@ -105,7 +102,8 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
     }
   }
 
-  updateArticle() async {
+  //Mise a jour de la quantit de l'article (decrementation apres ajout au panier)
+  updateQuantiteArticle() async {
     try {
       firestore.collection('articles').doc(widget.reference).update({
         'quantite':
@@ -118,23 +116,9 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
     }
   }
 
-  bool hasInternet = false;
-  checkConnection() async {
-    InternetConnectionChecker().onStatusChange.listen((event) {
-      final hasInternet = event == InternetConnectionStatus.connected;
-      setState(() {
-        this.hasInternet = hasInternet;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Status : $hasInternet',
-              style: TextStyle(color: Colors.white))));
-    });
-  }
-
   @override
   void initState() {
     user = FirebaseAuth.instance.currentUser;
-    checkConnection();
     super.initState();
   }
 
@@ -248,7 +232,7 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
                                     onPressed: () {
                                       addVente();
                                       addPanier();
-                                      updateArticle();
+                                      updateQuantiteArticle();
                                     },
                                     child: Text('Confirmer')),
                                 FlatButton(

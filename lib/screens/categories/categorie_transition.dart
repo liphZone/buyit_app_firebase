@@ -1,4 +1,3 @@
-// import 'package:buy_it_app/screens/articles/article_form.dart';
 import 'package:buy_it_app/screens/articles/article_form.dart';
 import 'package:buy_it_app/widgets/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

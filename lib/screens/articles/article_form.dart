@@ -33,6 +33,7 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
 
   User? user;
 
+  //Fonction de recuperation de l'image selectionne dans le telephone
   getImage() async {
     var img = await image.pickImage(source: ImageSource.gallery);
     setState(() {
@@ -44,10 +45,7 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
     });
   }
 
-  void userData() async {
-      user = FirebaseAuth.instance.currentUser;
-  }
-
+  //Fonction caster le libelle
   setSearchParam() {
     List<String> caseSearchList = [];
     String temp = "";
@@ -58,6 +56,7 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
     return caseSearchList;
   }
 
+  //ajout de l'article dans la table collection
   addArticle() async {
     var libelle = libelleController.text;
     final ref = 'PROD-${Random().nextInt(100000)}';
@@ -101,7 +100,7 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
 
   @override
   void initState() {
-    userData();
+    user = FirebaseAuth.instance.currentUser;
     super.initState();
   }
 
