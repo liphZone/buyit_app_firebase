@@ -31,7 +31,7 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
 
   Future<void> registerUser() async {
     try {
-      await FirebaseFirestore.instance.collection('users').doc().set({
+      await firestore.collection('users').doc().set({
         'name': nameController.text,
         'email': emailController.text,
         //le mot de passe n'est pas enregistré quelque soit la methode que j'utilise

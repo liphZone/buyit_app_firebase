@@ -1,6 +1,5 @@
 import 'package:buy_it_app/screens/articles/article_screen.dart';
 import 'package:buy_it_app/screens/auth/compte_screen.dart';
-import 'package:buy_it_app/screens/categories/categorie_screen.dart';
 import 'package:buy_it_app/screens/panier.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -22,12 +21,15 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   User? user;
+  
 
   void userData() async {
     setState(() {
       user = FirebaseAuth.instance.currentUser;
     });
   }
+
+
 
   @override
   void initState() {

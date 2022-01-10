@@ -1,6 +1,10 @@
+import 'package:buy_it_app/widgets/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 class PanierScreen extends StatefulWidget {
   const PanierScreen({Key? key}) : super(key: key);
@@ -11,24 +15,9 @@ class PanierScreen extends StatefulWidget {
 
 class _PanierScreenState extends State<PanierScreen> {
   User? user;
-
-  double? montant;
-
-  countArticlePanier() async {
-    await FirebaseFirestore.instance
-        .collection('paniers')
-        .get()
-        .then((snapshot) {
-      return snapshot.docs.length;
-    });
-  }
-
   showPanier() async {
     try {
-      await FirebaseFirestore.instance
-          .collection('ventes')
-          .get()
-          .then((snapshot) {
+      await firestore.collection('ventes').get().then((snapshot) {
         double sum = 0.0;
         for (var counter = 0; counter < snapshot.docs.length; counter++) {
           sum += int.parse(snapshot.docs[counter]['montant']);
@@ -41,7 +30,84 @@ class _PanierScreenState extends State<PanierScreen> {
     }
   }
 
-  deleteArticle() async{}
+  deleteArticlePanier(e) async {
+    try {
+      firestore.collection('ventes').doc(e).delete();
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Suppression réussi')));
+      Navigator.pop(context);
+    } on FirebaseException catch (e) {
+      print(e.message);
+    }
+  }
+
+  updatePanier() async {
+    try {
+      await firestore.collection('ventes').get().then((snapshot) {
+        double sum = 0.0;
+        for (var counter = 0; counter < snapshot.docs.length; counter++) {
+          sum += int.parse(snapshot.docs[counter]['montant']);
+        }
+        firestore.collection('paniers').doc(user?.uid).set({
+          'user_id': user?.uid,
+          'montant': sum,
+          'total_article': snapshot.docs.length
+        });
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Panier Mise a jour')));
+      });
+    } on FirebaseException catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Erreur $e')));
+    }
+  }
+
+  updateArticle(doc, q) async {
+    DocumentSnapshot documentSnapshot;
+    try {
+      //recuperer la quantité de l'article
+      documentSnapshot = await firestore.collection('articles').doc(doc).get();
+
+      //Mise a jour de la quantite de l'article
+      firestore
+          .collection('articles')
+          .doc(doc)
+          .update({'quantite': documentSnapshot.get('quantite') + q});
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Maj quantite')));
+    } on FirebaseException catch (e) {
+      print(e);
+    }
+  }
+
+  bool hasInternet = false;
+
+  ConnectivityResult result = ConnectivityResult.none;
+  checkConnection() async {
+    hasInternet = await InternetConnectionChecker().hasConnection;
+    result = await Connectivity().checkConnectivity();
+    //  if (result == ConnectivityResult.mobile) {
+    //                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    //                     content: Text('Connexion mobile ',
+    //                         style: TextStyle(color: Colors.green))));
+    //               } else if (result == ConnectivityResult.wifi) {
+    //                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    //                     content: Text('Connexion wifi ',
+    //                         style: TextStyle(color: Colors.green))));
+    //               } else {
+    //                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    //                     content: Text('Pas internet ',
+    //                         style: TextStyle(color: Colors.red))));
+    //               }
+
+    hasInternet
+        ? ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Internet ', style: TextStyle(color: Colors.green))))
+        : ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content:
+                Text(' No Internet ', style: TextStyle(color: Colors.red))));
+  }
 
   @override
   void initState() {
@@ -51,215 +117,261 @@ class _PanierScreenState extends State<PanierScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          children: [
-            Text(
-              'Mon Panier',
-              style: TextStyle(color: Colors.black),
-            ),
-          ],
+  Widget build(BuildContext context) => OverlaySupport.global(
+          child: Scaffold(
+        appBar: AppBar(
+          title: Row(
+            children: [
+              Text(
+                'Mon Panier ',
+                style: TextStyle(color: Colors.black),
+              ),
+              IconButton(
+                onPressed: () {
+                  checkConnection();
+                },
+                icon: Icon(Icons.add),
+                color: Colors.black,
+              )
+            ],
+          ),
+          centerTitle: true,
+          backgroundColor: Colors.white,
         ),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-      ),
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        color: Colors.grey.shade200,
-        child: SingleChildScrollView(
-          physics: ScrollPhysics(),
-          child: Column(children: [
-            user?.email == null
-                ? Container(
-                    height: MediaQuery.of(context).size.height * .70,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Center(
-                        child: Column(
-                          children: [
-                            Image.asset(
-                              'assets/images/sac_vide.png',
-                              height: 100,
-                            ),
-                            Text(
-                              'Aucun article dans votre panier actuellement , veuillez effectuer des achats !',
-                              style: TextStyle(fontSize: 20),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.pushNamed(context, 'auth');
-                              },
-                              child: Text('ou connectez-vous',
-                                  style: TextStyle(
-                                      fontSize: 20, color: Colors.blue)),
-                            ),
-                          ],
+        body: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          color: Colors.grey.shade200,
+          child: SingleChildScrollView(
+            physics: ScrollPhysics(),
+            child: Column(children: [
+              user?.email == null
+                  ? Container(
+                      height: MediaQuery.of(context).size.height * .70,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              Image.asset(
+                                'assets/images/sac_vide.png',
+                                height: 100,
+                              ),
+                              Text(
+                                'Aucun article dans votre panier actuellement , veuillez effectuer des achats !',
+                                style: TextStyle(fontSize: 20),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.pushNamed(context, 'auth');
+                                },
+                                child: Text('ou connectez-vous',
+                                    style: TextStyle(
+                                        fontSize: 20, color: Colors.blue)),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  )
-                : Container(
-                    height: MediaQuery.of(context).size.height * .70,
-                    child: StreamBuilder(
-                        stream: FirebaseFirestore.instance
-                            .collection('ventes')
-                            .where('user_id', isEqualTo: user?.uid)
-                            .snapshots(),
-                        builder:
-                            (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                          return ListView.builder(
-                              scrollDirection: Axis.vertical,
-                              shrinkWrap: true,
-                              itemCount: snapshot.data?.docs.length,
-                              itemBuilder: (context, i) {
-                                if (snapshot.hasData) {
-                                  QueryDocumentSnapshot x =
-                                      snapshot.data!.docs[i];
-                                  return Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        //Fonction de suppression du panier
-                                      },
-                                      child: Row(children: [
-                                        Container(
-                                          height: 100,
-                                          width: 100,
-                                          child: Image.network(x['image']),
-                                        ),
-                                        Container(
-                                          height: 100,
-                                          width: 120,
-                                          child: Column(
-                                            children: [
-                                              Text(
-                                                '${x['article']}',
-                                                style: TextStyle(fontSize: 20),
-                                              ),
-                                              Row(
-                                                children: [
-                                                  Text('${x['prix_vente']}'),
-                                                  Text('\t x \t'),
-                                                  Text(
-                                                      '${x['quantite_vendue']}'),
-                                                ],
-                                              ),
-                                            ],
+                    )
+                  : Container(
+                      height: MediaQuery.of(context).size.height * .70,
+                      child: StreamBuilder(
+                          stream: firestore
+                              .collection('ventes')
+                              .where('user_id', isEqualTo: user?.uid)
+                              .snapshots(),
+                          builder:
+                              (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                            return ListView.builder(
+                                scrollDirection: Axis.vertical,
+                                shrinkWrap: true,
+                                itemCount: snapshot.data?.docs.length,
+                                itemBuilder: (context, i) {
+                                  if (snapshot.hasData) {
+                                    QueryDocumentSnapshot x =
+                                        snapshot.data!.docs[i];
+                                    return Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          //Fonction de suppression du panier
+                                        },
+                                        child: Row(children: [
+                                          Container(
+                                            height: 100,
+                                            width: 100,
+                                            child: Image.network(x['image']),
                                           ),
-                                        ),
-                                        Container(
-                                          height: 70,
-                                          width: 70,
-                                          decoration: BoxDecoration(
-                                            boxShadow: [
-                                              BoxShadow(
-                                                blurRadius: 2,
-                                              ),
-                                            ],
-                                            color: Colors.grey.shade50,
-                                            borderRadius:
-                                                BorderRadius.circular(50),
+                                          Container(
+                                            height: 100,
+                                            width: 120,
+                                            child: Column(
+                                              children: [
+                                                Text(
+                                                  '${x['article']}',
+                                                  style:
+                                                      TextStyle(fontSize: 20),
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    Text('${x['prix_vente']}'),
+                                                    Text('\t x \t'),
+                                                    Text(
+                                                        '${x['quantite_vendue']}'),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                          child: IconButton(
-                                              onPressed: () {},
-                                              icon: Icon(
-                                                Icons.delete,
-                                                size: 35,
-                                                color: Colors.red,
-                                              )),
-                                        ),
-                                      ]),
+                                          Container(
+                                            height: 70,
+                                            width: 70,
+                                            decoration: BoxDecoration(
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  blurRadius: 2,
+                                                ),
+                                              ],
+                                              color: Colors.grey.shade50,
+                                              borderRadius:
+                                                  BorderRadius.circular(50),
+                                            ),
+                                            child: IconButton(
+                                                onPressed: () {
+                                                  showDialog(
+                                                      context: context,
+                                                      builder: (_) =>
+                                                          AlertDialog(
+                                                              title: Text(
+                                                                  'Vous allez supprimer ce produit de votre panier?'),
+                                                              actions: [
+                                                                FlatButton(
+                                                                    onPressed:
+                                                                        () {
+                                                                      deleteArticlePanier(
+                                                                          x['article_id']);
+                                                                      updatePanier();
+                                                                      updateArticle(
+                                                                          x['article_id'],
+                                                                          int.parse(x['quantite_vendue']));
+                                                                    },
+                                                                    child: Text(
+                                                                        'Confirmer')),
+                                                                FlatButton(
+                                                                    onPressed: () =>
+                                                                        Navigator.pop(
+                                                                            context),
+                                                                    child: Text(
+                                                                        'Annuler')),
+                                                              ],
+                                                              content:
+                                                                  Container(
+                                                                      height:
+                                                                          90,
+                                                                      child: Column(
+                                                                          children: [
+                                                                            Text('Article : ${x['article']}'),
+                                                                            Text('Prix unitaire : ${x['prix_vente']} F CFA'),
+                                                                            Text('Quantité à payer : ${x['quantite_vendue']}'),
+                                                                          ]))));
+                                                },
+                                                icon: Icon(
+                                                  Icons.delete,
+                                                  size: 35,
+                                                  color: Colors.red,
+                                                )),
+                                          ),
+                                        ]),
+                                      ),
+                                    );
+                                  }
+                                  if (!snapshot.hasData) {
+                                    return Container(
+                                      height: 70,
+                                      width: 70,
+                                      child: const CircularProgressIndicator(),
+                                    );
+                                  }
+                                  return Container(
+                                    child: Column(
+                                      children: [
+                                        Text('chargement en cours'),
+                                        CircularProgressIndicator(),
+                                      ],
                                     ),
                                   );
-                                }
-                                if (!snapshot.hasData) {
-                                  return Container(
-                                    height: 70,
-                                    width: 70,
-                                    child: const CircularProgressIndicator(),
-                                  );
-                                }
-                                return Container(
-                                  child: Column(
-                                    children: [
-                                      Text('chargement en cours'),
-                                      CircularProgressIndicator(),
-                                    ],
-                                  ),
-                                );
-                              });
-                        })),
-          ]),
+                                });
+                          })),
+            ]),
+          ),
         ),
-      ),
-      bottomNavigationBar: user?.email != null
-          ? Container(
-              height: 120,
-              decoration:
-                  BoxDecoration(color: Colors.grey.shade100, boxShadow: [
-                BoxShadow(blurRadius: 4),
-              ]),
-              child: StreamBuilder(
-                  stream: FirebaseFirestore.instance
-                      .collection('paniers')
-                      .snapshots(),
-                  builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                    return ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        shrinkWrap: true,
-                        itemCount: snapshot.data?.docs.length,
-                        itemBuilder: (context, i) {
-                          if (snapshot.hasData) {
-                            QueryDocumentSnapshot x = snapshot.data!.docs[i];
-                            return Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(children: [
-                                Text(
-                                  'Montant total: ${x['montant']} F CFA',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20),
-                                ),
-                                FlatButton(
-                                  color: Colors.blue,
-                                  onPressed: () {
-                                    // ScaffoldMessenger.of(context).showSnackBar(
-                                    //     SnackBar(content: Text('Paiement .....')));
-                                  },
-                                  child: Text(
-                                    'Commander',
+        bottomNavigationBar: user?.email != null
+            ? Container(
+                height: 120,
+                decoration:
+                    BoxDecoration(color: Colors.grey.shade100, boxShadow: [
+                  BoxShadow(blurRadius: 4),
+                ]),
+                child: StreamBuilder(
+                    stream: firestore
+                        .collection('paniers')
+                        .where('user_id', isEqualTo: user?.uid)
+                        .snapshots(),
+                    builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                      return ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          shrinkWrap: true,
+                          itemCount: snapshot.data?.docs.length,
+                          itemBuilder: (context, i) {
+                            if (snapshot.hasData) {
+                              QueryDocumentSnapshot x = snapshot.data!.docs[i];
+                              return Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(children: [
+                                  Text(
+                                    'Montant total: ${x['montant']} F CFA',
                                     style: TextStyle(
-                                        fontSize: 20, color: Colors.white),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20),
                                   ),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30)),
-                                ),
-
-                                Text('${x['total_article']} articles dans le panier'),
-                              ]),
-                            );
-                          }
-                          if (!snapshot.hasData) {
+                                  FlatButton(
+                                    color: Colors.blue,
+                                    onPressed: () {
+                                      // ScaffoldMessenger.of(context).showSnackBar(
+                                      //     SnackBar(content: Text('Paiement .....')));
+                                    },
+                                    child: Text(
+                                      'Commander',
+                                      style: TextStyle(
+                                          fontSize: 20, color: Colors.white),
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(30)),
+                                  ),
+                                  Text(
+                                      '${x['total_article']} articles dans le panier'),
+                                ]),
+                              );
+                            }
+                            if (!snapshot.hasData) {
+                              return Container(
+                                height: 70,
+                                width: 70,
+                                child: Text('Votre panier est vide'),
+                              );
+                            }
                             return Container(
-                              height: 70,
-                              width: 70,
-                              child:  Text('Votre panier est vide'),
+                              child: Column(
+                                children: [
+                                  Text('chargement en cours'),
+                                  CircularProgressIndicator(),
+                                ],
+                              ),
                             );
-                          }
-                          return Container(
-                            child: Column(
-                              children: [
-                                Text('chargement en cours'),
-                                CircularProgressIndicator(),
-                              ],
-                            ),
-                          );
-                        });
-                  }))
-          : null,
-    );
-  }
+                          });
+                    }))
+            : null,
+      ));
 }

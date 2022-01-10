@@ -45,7 +45,7 @@ class _CategorieScreenState extends State<CategorieScreen> {
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
             child: StreamBuilder(
-                stream: FirebaseFirestore.instance
+                stream: firestore
                     .collection('articles')
                     .where('categorie_id', isEqualTo: widget.referenceCategorie)
                     .snapshots(),

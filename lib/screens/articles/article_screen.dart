@@ -1,6 +1,7 @@
 import 'package:buy_it_app/screens/articles/article_details.dart';
 import 'package:buy_it_app/screens/categories/categorie_screen.dart';
 import 'package:buy_it_app/screens/search_screen.dart';
+import 'package:buy_it_app/widgets/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -97,7 +98,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
                 height: 100,
                 width: MediaQuery.of(context).size.width,
                 child: StreamBuilder(
-                    stream: FirebaseFirestore.instance
+                    stream: firestore
                         .collection('categories')
                         .snapshots(),
                     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -197,7 +198,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
                   height: 300,
                   width: MediaQuery.of(context).size.width,
                   child: StreamBuilder(
-                      stream: FirebaseFirestore.instance
+                      stream: firestore
                           .collection('articles')
                           .snapshots(),
                       builder:
@@ -224,7 +225,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
                                                       '${x['reference']}',
                                                   libelle: '${x['libelle']}',
                                                   description:
-                                                      '${x['libelle']}',
+                                                      '${x['description']}',
                                                   prix: '${x['prix']}',
                                                   quantite: '${x['quantite']}',
                                                   image: '${x['image']}',

@@ -33,7 +33,7 @@ class _CategorieFormScreenState extends State<CategorieFormScreen> {
     var libelle = libelleController.text;
     final ref = 'CAT-${Random().nextInt(100000)}';
     try {
-      await FirebaseFirestore.instance.collection('categories').doc(ref).set({
+      await firestore.collection('categories').doc(ref).set({
         'reference': ref,
         'libelle': '${libelle[0].toUpperCase()}${libelle.substring(1)}',
         'description': descriptionController.text,

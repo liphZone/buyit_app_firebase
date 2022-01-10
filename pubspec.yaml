@@ -39,6 +39,9 @@ dependencies:
   image_picker: ^0.8.4+4
   firebase_storage: ^10.2.4
   firebase_auth: ^3.3.4
+  internet_connection_checker: ^0.0.1+3
+  overlay_support: ^1.2.1
+  connectivity_plus: ^2.2.0
 
 dev_dependencies:
   flutter_test:

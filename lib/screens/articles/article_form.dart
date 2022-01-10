@@ -73,7 +73,7 @@ class _ArticleFormScreenState extends State<ArticleFormScreen> {
     url = await snapshot.ref.getDownloadURL();
 
     try {
-      await FirebaseFirestore.instance.collection('articles').doc(ref).set({
+      await firestore.collection('articles').doc(ref).set({
         'reference': ref,
         'libelle': '${libelle[0].toUpperCase()}${libelle.substring(1)}',
         'description': descriptionController.text,

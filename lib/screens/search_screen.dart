@@ -47,7 +47,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 height: 300,
                 width: MediaQuery.of(context).size.width,
                 child: StreamBuilder(
-                    stream: FirebaseFirestore.instance
+                    stream: firestore
                         .collection('articles')
                         .where('search_keywords', arrayContains: widget.search)
                         .snapshots(),

@@ -14,7 +14,6 @@ class CategorieTransitionScreen extends StatefulWidget {
 }
 
 class _CategorieTransitionScreenState extends State<CategorieTransitionScreen> {
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +50,7 @@ class _CategorieTransitionScreenState extends State<CategorieTransitionScreen> {
                 height: 300,
                 width: MediaQuery.of(context).size.width,
                 child: StreamBuilder(
-                    stream: FirebaseFirestore.instance
+                    stream: firestore
                         .collection('categories')
                         .snapshots(),
                     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
